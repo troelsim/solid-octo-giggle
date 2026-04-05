@@ -1,33 +1,4 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:root {
-  --green:  #1e7d5a;
-  --green-light: #2aaa78;
-  --red:    #c8312a;
-  --amber:  #e09020;
-  --dark:   #111410;
-  --card-bg: rgba(255, 255, 255, 0.06);
-  --card-border: rgba(255, 255, 255, 0.12);
-  --text:   #f2ede6;
-  --muted:  rgba(242, 237, 230, 0.5);
-}
-
-html, body, #root {
-  height: 100%;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--dark);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── background blobs ── */
+/* ── Background blobs ── */
 .app {
   min-height: 100dvh;
   position: relative;
@@ -48,7 +19,7 @@ body {
 .blob-1 {
   width: 420px;
   height: 420px;
-  background: var(--green);
+  background: var(--color-primary);
   top: -120px;
   right: -100px;
 }
@@ -56,7 +27,7 @@ body {
 .blob-2 {
   width: 340px;
   height: 340px;
-  background: var(--red);
+  background: var(--color-accent-red);
   bottom: -80px;
   left: -80px;
 }
@@ -64,78 +35,71 @@ body {
 .blob-3 {
   width: 260px;
   height: 260px;
-  background: var(--amber);
+  background: var(--color-accent-amber);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   opacity: 0.18;
 }
 
-/* ── layout ── */
+/* ── Page layout ── */
 .container {
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  padding: 48px 24px 40px;
+  padding: var(--space-12) var(--space-6) var(--space-10);
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
 }
 
-/* ── header ── */
+/* ── Header ── */
 .header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: var(--space-10);
 }
 
 .title {
-  font-size: 2.4rem;
-  font-weight: 800;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-extrabold);
   letter-spacing: -0.04em;
-  color: var(--text);
+  color: var(--color-text);
   line-height: 1;
 }
 
 .title span {
-  color: var(--green-light);
+  color: var(--color-primary-light);
 }
 
 .subtitle {
-  margin-top: 8px;
-  font-size: 0.85rem;
-  color: var(--muted);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* ── main ── */
+/* ── Main ── */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: var(--space-7);
 }
 
-/* ── joke card ── */
+/* ── Joke card content ── */
 .joke-card {
   width: 100%;
   min-height: 220px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 24px;
-  padding: 32px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  gap: var(--space-5);
 }
 
 .joke-card.fade-out {
@@ -149,83 +113,51 @@ body {
 }
 
 .joke-placeholder {
-  color: var(--muted);
-  font-size: 1.05rem;
+  color: var(--color-muted);
+  font-size: var(--text-md);
   text-align: center;
   line-height: 1.6;
 }
 
 .joke-setup {
-  font-size: 1.05rem;
-  color: var(--text);
+  font-size: var(--text-md);
+  color: var(--color-text);
   text-align: center;
   line-height: 1.65;
-  font-weight: 400;
+  font-weight: var(--weight-normal);
 }
 
 .divider {
   width: 40px;
   height: 2px;
-  background: linear-gradient(90deg, var(--green-light), var(--amber));
+  background: linear-gradient(90deg, var(--color-primary-light), var(--color-accent-amber));
   border-radius: 2px;
   flex-shrink: 0;
 }
 
 .joke-punchline {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
   text-align: center;
   line-height: 1.5;
 }
 
-/* ── button ── */
-.joke-btn {
-  width: 100%;
-  padding: 18px 24px;
-  border: none;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-light) 50%, var(--amber) 100%);
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 24px rgba(30, 125, 90, 0.35);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.joke-btn:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 12px rgba(30, 125, 90, 0.25);
-}
-
-@media (hover: hover) {
-  .joke-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(30, 125, 90, 0.45);
-  }
-}
-
-/* ── counter ── */
+/* ── Counter ── */
 .counter {
-  font-size: 0.78rem;
-  color: var(--muted);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
   letter-spacing: 0.04em;
 }
 
-/* ── tablet / desktop ── */
+/* ── Tablet / desktop ── */
 @media (min-width: 520px) {
   .title {
-    font-size: 3rem;
+    font-size: var(--text-3xl);
   }
 
   .joke-card {
     min-height: 240px;
-    padding: 40px 36px;
   }
 
   .joke-setup {
@@ -233,6 +165,6 @@ body {
   }
 
   .joke-punchline {
-    font-size: 1.3rem;
+    font-size: var(--text-xl);
   }
 }
