@@ -1,15 +1,13 @@
 /* Wind Farm Designer — uses design tokens from src/styles/tokens.css */
 
 /* ── Layout ── */
-html, body, #root {
-  height: 100%;
-  overflow: hidden;
-}
-
+/* position:fixed;inset:0 is the most reliable full-viewport shell on mobile
+   — avoids dvh/overflow issues across browsers and embedded webviews */
 .app {
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
   background: var(--color-bg);
   color: var(--color-text);
 }
