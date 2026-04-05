@@ -1,38 +1,238 @@
-.App {
-  text-align: center;
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.App-logo {
-  height: 40vmin;
+:root {
+  --green:  #1e7d5a;
+  --green-light: #2aaa78;
+  --red:    #c8312a;
+  --amber:  #e09020;
+  --dark:   #111410;
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text:   #f2ede6;
+  --muted:  rgba(242, 237, 230, 0.5);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--dark);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── background blobs ── */
+.app {
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
   pointer-events: none;
+  z-index: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.blob-1 {
+  width: 420px;
+  height: 420px;
+  background: var(--green);
+  top: -120px;
+  right: -100px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.blob-2 {
+  width: 340px;
+  height: 340px;
+  background: var(--red);
+  bottom: -80px;
+  left: -80px;
+}
+
+.blob-3 {
+  width: 260px;
+  height: 260px;
+  background: var(--amber);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.18;
+}
+
+/* ── layout ── */
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 48px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* ── header ── */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.title span {
+  color: var(--green-light);
+}
+
+.subtitle {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── main ── */
+.main {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 28px;
 }
 
-.App-link {
-  color: #61dafb;
+/* ── joke card ── */
+.joke-card {
+  width: 100%;
+  min-height: 220px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.joke-card.fade-out {
+  opacity: 0;
+  transform: scale(0.97);
+}
+
+.joke-card.fade-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.joke-placeholder {
+  color: var(--muted);
+  font-size: 1.05rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.joke-setup {
+  font-size: 1.05rem;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+.divider {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--green-light), var(--amber));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.joke-punchline {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── button ── */
+.joke-btn {
+  width: 100%;
+  padding: 18px 24px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-light) 50%, var(--amber) 100%);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 24px rgba(30, 125, 90, 0.35);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.joke-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 12px rgba(30, 125, 90, 0.25);
+}
+
+@media (hover: hover) {
+  .joke-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(30, 125, 90, 0.45);
   }
-  to {
-    transform: rotate(360deg);
+}
+
+/* ── counter ── */
+.counter {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* ── tablet / desktop ── */
+@media (min-width: 520px) {
+  .title {
+    font-size: 3rem;
+  }
+
+  .joke-card {
+    min-height: 240px;
+    padding: 40px 36px;
+  }
+
+  .joke-setup {
+    font-size: 1.1rem;
+  }
+
+  .joke-punchline {
+    font-size: 1.3rem;
   }
 }
