@@ -152,7 +152,7 @@ export default function App() {
             <line x1="10" y1="10" x2="17.3" y2="14.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             <line x1="10" y1="10" x2="2.7" y2="14.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Wind Farm Designer
+          PadSketch
         </div>
         <div className="header-right">
           <div ref={ringWrapRef} className="ring-toggle-wrap">
