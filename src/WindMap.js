@@ -64,10 +64,11 @@ function makeTurbineIcon(label, selected, moveTarget) {
   });
 }
 
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick }) {
+export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
+  const ringsRef = useRef({});
   const tileLayerRef = useRef(null);
   const cbRef = useRef({ onMapClick, onTurbineClick });
   const satInitRef = useRef(false);
@@ -96,6 +97,8 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     return () => {
       Object.values(markersRef.current).forEach(m => m.remove());
       markersRef.current = {};
+      Object.values(ringsRef.current).forEach(r => r.remove());
+      ringsRef.current = {};
       map.remove();
       mapRef.current = null;
     };
@@ -114,17 +117,26 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     tileLayerRef.current.bringToBack();
   }, [satellite]);
 
-  // Sync turbine markers
+  // Sync turbine markers and spacing rings
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     const liveIds = new Set(turbines.map(t => t.id));
 
+    // Remove markers for deleted turbines
     for (const id of Object.keys(markersRef.current)) {
       if (!liveIds.has(id)) {
         markersRef.current[id].remove();
         delete markersRef.current[id];
+      }
+    }
+
+    // Remove rings for deleted turbines
+    for (const id of Object.keys(ringsRef.current)) {
+      if (!liveIds.has(id)) {
+        ringsRef.current[id].remove();
+        delete ringsRef.current[id];
       }
     }
 
@@ -145,8 +157,29 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         });
         markersRef.current[t.id] = m;
       }
+
+      // Spacing ring: radius = 2 × rotor diameter (in metres)
+      const spec = t.custom ?? fleet;
+      const ringRadius = 2 * (spec?.rotorDiameter ?? 150);
+
+      if (showSpacingRing) {
+        if (ringsRef.current[t.id]) {
+          ringsRef.current[t.id].setLatLng([t.lat, t.lng]).setRadius(ringRadius);
+        } else {
+          ringsRef.current[t.id] = L.circle([t.lat, t.lng], {
+            radius: ringRadius,
+            color: 'rgba(242, 237, 230, 0.65)',
+            fill: false,
+            weight: 2,
+            dashArray: '5 7',
+          }).addTo(map);
+        }
+      } else if (ringsRef.current[t.id]) {
+        ringsRef.current[t.id].remove();
+        delete ringsRef.current[t.id];
+      }
     });
-  }, [turbines, selectedId, mode]);
+  }, [turbines, selectedId, mode, showSpacingRing, fleet]);
 
   return (
     <div className="wind-map-wrapper">

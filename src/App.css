@@ -298,6 +298,13 @@
   white-space: nowrap;
 }
 
+/* ── Header right-side button group ── */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 /* ── Icon / text buttons (header) ── */
 .btn-icon {
   border: none;
@@ -325,6 +332,25 @@
 .btn-add:active {
   background: var(--color-primary-light);
   transform: scale(0.93);
+}
+
+.btn-ring-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25) !important;
+  background: rgba(255,255,255,0.08);
+  color: rgba(242, 237, 230, 0.75);
+}
+
+.btn-ring-toggle--on {
+  background: rgba(30, 125, 90, 0.2);
+  border-color: rgba(42, 170, 120, 0.5) !important;
+  color: var(--color-primary-light);
+}
+
+.btn-ring-toggle:active {
+  background: rgba(255,255,255,0.1);
 }
 
 .btn-close {
