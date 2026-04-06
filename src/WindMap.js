@@ -16,7 +16,7 @@ const LAYERS = {
   },
 };
 
-function makeTurbineIcon(num, selected, moveTarget) {
+function makeTurbineIcon(label, selected, moveTarget) {
   const color = moveTarget
     ? 'var(--color-accent-amber, #e09020)'
     : selected
@@ -57,7 +57,7 @@ function makeTurbineIcon(num, selected, moveTarget) {
         ${bgCircle}${ring}${blades}
         <circle cx="${c}" cy="${c}" r="${hubR}" fill="${color}"/>
       </svg>
-      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:${color};white-space:nowrap;font-family:system-ui,sans-serif;text-shadow:0 0 4px #111410,0 0 4px #111410">T${num}</div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:${color};white-space:nowrap;font-family:system-ui,sans-serif;text-shadow:0 0 4px #111410,0 0 4px #111410">${label}</div>
     </div>`,
     iconSize: [size, size + 14],
     iconAnchor: [c, c],
@@ -131,7 +131,8 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     turbines.forEach((t, i) => {
       const sel = t.id === selectedId;
       const moving = mode === 'move' && sel;
-      const icon = makeTurbineIcon(i + 1, sel, moving);
+      const label = t.name ? t.name.slice(0, 7) : `T${i + 1}`;
+      const icon = makeTurbineIcon(label, sel, moving);
       const zOff = sel ? 1000 : 0;
 
       if (markersRef.current[t.id]) {

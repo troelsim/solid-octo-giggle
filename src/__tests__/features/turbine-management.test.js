@@ -95,3 +95,34 @@ describe('Deleting a turbine', () => {
     expect(farm.turbineCount()).toBe(2);
   });
 });
+
+describe('Renaming a turbine', () => {
+  it('shows the custom name in the panel instead of the positional default', () => {
+    const farm = createWindFarm();
+    farm.addTurbine();
+
+    farm.renameTurbine('Alpha');
+
+    const input = document.querySelector('input[aria-label="Turbine name"]');
+    expect(input.value).toBe('Alpha');
+  });
+
+  it('uses the positional placeholder when no name is set', () => {
+    const farm = createWindFarm();
+    farm.addTurbine();
+
+    const input = document.querySelector('input[aria-label="Turbine name"]');
+    expect(input.value).toBe('');
+    expect(input.placeholder).toBe('Turbine 1');
+  });
+
+  it('reflects the new name in the marker aria-label', () => {
+    const farm = createWindFarm();
+    farm.addTurbine();
+
+    farm.renameTurbine('Bravo');
+
+    const marker = document.querySelector('[data-testid="turbine-marker"]');
+    expect(marker.getAttribute('aria-label')).toBe('Bravo');
+  });
+});
