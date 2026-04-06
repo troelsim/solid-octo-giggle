@@ -1,65 +1,184 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import WindMap from './WindMap';
 import './App.css';
-import { jokes } from './data/jokes';
-import Button from './components/Button/Button';
-import Card from './components/Card/Card';
 
-function App() {
-  const [joke, setJoke] = useState(null);
-  const [animating, setAnimating] = useState(false);
-  const [usedIndices, setUsedIndices] = useState([]);
+const FLEET_DEFAULTS = { hubHeight: 120, rotorDiameter: 150, ratedPower: 5.0 };
 
-  const getNextJoke = () => {
-    setAnimating(true);
-    setTimeout(() => {
-      let available = jokes.map((_, i) => i).filter(i => !usedIndices.includes(i));
-      if (available.length === 0) {
-        setUsedIndices([]);
-        available = jokes.map((_, i) => i);
-      }
-      const pick = available[Math.floor(Math.random() * available.length)];
-      setUsedIndices(prev => [...prev, pick]);
-      setJoke(jokes[pick]);
-      setAnimating(false);
-    }, 180);
-  };
+function getSpec(turbine, fleet) {
+  return turbine.custom ?? fleet;
+}
 
+function SpecField({ label, unit, value, onChange }) {
   return (
-    <div className="app">
-      <div className="blob blob-1" />
-      <div className="blob blob-2" />
-      <div className="blob blob-3" />
-
-      <div className="container">
-        <header className="header">
-          <h1 className="title">dev<span>jokes</span></h1>
-          <p className="subtitle">99 handpicked programming jokes</p>
-        </header>
-
-        <main className="main">
-          <Card className={`joke-card ${animating ? 'fade-out' : 'fade-in'}`}>
-            {joke ? (
-              <>
-                <p className="joke-setup">{joke.setup}</p>
-                <div className="divider" />
-                <p className="joke-punchline">{joke.punchline}</p>
-              </>
-            ) : (
-              <p className="joke-placeholder">Hit the button below for a laugh</p>
-            )}
-          </Card>
-
-          <Button onClick={getNextJoke}>
-            {joke ? 'Next Joke' : 'Tell Me a Joke'}
-          </Button>
-
-          {usedIndices.length > 0 && (
-            <p className="counter">{usedIndices.length} of {jokes.length} jokes told</p>
-          )}
-        </main>
+    <div className="spec-field">
+      <span className="spec-label">{label}</span>
+      <div className="spec-input-wrap">
+        <input
+          className="spec-input"
+          type="number"
+          inputMode="decimal"
+          value={value}
+          onChange={e => {
+            const v = parseFloat(e.target.value);
+            if (!isNaN(v) && v > 0) onChange(v);
+          }}
+        />
+        <span className="spec-unit">{unit}</span>
       </div>
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  const [turbines, setTurbines] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [mode, setMode] = useState('view');
+  const [fleet, setFleet] = useState(FLEET_DEFAULTS);
+  const idCounter = useRef(1);
+
+  const selected = turbines.find(t => t.id === selectedId) ?? null;
+  const selectedSpec = selected ? getSpec(selected, fleet) : null;
+  const selectedIndex = selected ? turbines.findIndex(t => t.id === selectedId) + 1 : null;
+  const isCustom = selected?.custom != null;
+
+  const handleMapClick = useCallback((lat, lng) => {
+    setMode(prev => {
+      if (prev === 'add') {
+        const id = `t${idCounter.current++}`;
+        setTurbines(ts => [...ts, { id, lat, lng, custom: null }]);
+        setSelectedId(id);
+        return 'view';
+      }
+      if (prev === 'move') {
+        setTurbines(ts => ts.map(t => t.id === selectedId ? { ...t, lat, lng } : t));
+        return 'view';
+      }
+      setSelectedId(null);
+      return 'view';
+    });
+  }, [selectedId]);
+
+  const handleTurbineClick = useCallback((id) => {
+    setSelectedId(id);
+    setMode('view');
+  }, []);
+
+  const updateSelectedSpec = (key, value) => {
+    setTurbines(ts => ts.map(t =>
+      t.id === selectedId
+        ? { ...t, custom: { ...(t.custom ?? fleet), [key]: value } }
+        : t
+    ));
+  };
+
+  const resetToFleet = () => setTurbines(ts => ts.map(t => t.id === selectedId ? { ...t, custom: null } : t));
+
+  const applyToAll = () => {
+    setFleet(selectedSpec);
+    setTurbines(ts => ts.map(t => ({ ...t, custom: null })));
+  };
+
+  const deleteTurbine = () => {
+    setTurbines(ts => ts.filter(t => t.id !== selectedId));
+    setSelectedId(null);
+    setMode('view');
+  };
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <div className="app-title">
+          <svg className="app-icon" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+            <circle cx="10" cy="10" r="2.2" fill="currentColor"/>
+            <line x1="10" y1="10" x2="10" y2="1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="10" y1="10" x2="17.3" y2="14.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="10" y1="10" x2="2.7" y2="14.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Wind Farm Designer
+        </div>
+        {mode === 'view' ? (
+          <button className="btn-icon btn-add" onClick={() => { setSelectedId(null); setMode('add'); }} aria-label="Add turbine">
+            +
+          </button>
+        ) : (
+          <button className="btn-text btn-cancel" onClick={() => setMode('view')}>
+            Cancel
+          </button>
+        )}
+      </header>
+
+      {mode !== 'view' && (
+        <div className="mode-banner">
+          {mode === 'add'
+            ? 'Tap the map to place a turbine'
+            : `Tap the map to move Turbine ${selectedIndex}`}
+        </div>
+      )}
+
+      <div className="map-area">
+        <WindMap
+          turbines={turbines}
+          selectedId={selectedId}
+          mode={mode}
+          onMapClick={handleMapClick}
+          onTurbineClick={handleTurbineClick}
+        />
+      </div>
+
+      <div className="bottom-panel">
+        {selected ? (
+          <>
+            <div className="panel-row panel-header">
+              <span className="panel-title">
+                Turbine {selectedIndex}
+                {isCustom && <span className="badge">custom</span>}
+              </span>
+              <div className="header-btns">
+                <button className="btn-sm" onClick={() => setMode('move')}>Move</button>
+                <button className="btn-sm btn-sm-danger" onClick={deleteTurbine}>Delete</button>
+                <button className="btn-icon btn-close" onClick={() => setSelectedId(null)} aria-label="Deselect">×</button>
+              </div>
+            </div>
+            <div className="spec-row">
+              <SpecField label="Hub height" unit="m"  value={selectedSpec.hubHeight}     onChange={v => updateSelectedSpec('hubHeight', v)} />
+              <SpecField label="Rotor dia." unit="m"  value={selectedSpec.rotorDiameter} onChange={v => updateSelectedSpec('rotorDiameter', v)} />
+              <SpecField label="Power"      unit="MW" value={selectedSpec.ratedPower}    onChange={v => updateSelectedSpec('ratedPower', v)} />
+            </div>
+            {isCustom && (
+              <div className="panel-secondary">
+                <button className="btn-text-action" onClick={resetToFleet}>Reset to fleet</button>
+                <button className="btn-text-action" onClick={applyToAll}>Set as fleet defaults</button>
+              </div>
+            )}
+            {!isCustom && turbines.length > 1 && (
+              <div className="panel-secondary">
+                <button className="btn-text-action" onClick={applyToAll}>Apply to all turbines</button>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="panel-row panel-header">
+              <span className="panel-title">Fleet defaults</span>
+              <span className="fleet-count">
+                {turbines.length === 0 ? 'Tap + to add turbines' : `${turbines.length} turbine${turbines.length !== 1 ? 's' : ''}`}
+              </span>
+            </div>
+            <div className="spec-row">
+              <SpecField label="Hub height" unit="m"  value={fleet.hubHeight}     onChange={v => setFleet(f => ({ ...f, hubHeight: v }))} />
+              <SpecField label="Rotor dia." unit="m"  value={fleet.rotorDiameter} onChange={v => setFleet(f => ({ ...f, rotorDiameter: v }))} />
+              <SpecField label="Power"      unit="MW" value={fleet.ratedPower}    onChange={v => setFleet(f => ({ ...f, ratedPower: v }))} />
+            </div>
+            {turbines.length > 0 && (
+              <div className="panel-secondary">
+                <button className="btn-text-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
+                  Apply to all turbines
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
