@@ -114,6 +114,12 @@ export default function App() {
     setMode('view');
   };
 
+  const clearLayout = () => {
+    setTurbines([]);
+    setSelectedId(null);
+    setMode('view');
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -262,6 +268,9 @@ export default function App() {
               <div className="panel-secondary">
                 <button className="btn-text-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
                   Apply to all turbines
+                </button>
+                <button className="btn-text-action btn-text-action--danger" onClick={clearLayout}>
+                  Clear layout
                 </button>
               </div>
             )}

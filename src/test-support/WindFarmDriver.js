@@ -201,6 +201,11 @@ export function createWindFarm() {
       userEvent.click(screen.getByRole('button', { name: /show ring/i }));
     },
 
+    /** Click "Clear layout" to remove all turbines at once. */
+    clearLayout() {
+      userEvent.click(screen.getByRole('button', { name: /clear layout/i }));
+    },
+
     /** True when the WindMap has spacing ring rendering enabled. */
     isSpacingRingEnabled() {
       return screen.getByTestId('wind-map').dataset.showSpacingRing === 'true';
