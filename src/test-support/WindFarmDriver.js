@@ -201,9 +201,19 @@ export function createWindFarm() {
       userEvent.click(screen.getByRole('button', { name: /show ring/i }));
     },
 
-    /** Click "Clear layout" to remove all turbines at once. */
+    /** Click "Clear layout" to open the confirmation popover. */
     clearLayout() {
       userEvent.click(screen.getByRole('button', { name: /clear layout/i }));
+    },
+
+    /** Click "Clear all" in the confirmation popover to confirm clearing. */
+    confirmClearLayout() {
+      userEvent.click(screen.getByRole('button', { name: /clear all/i }));
+    },
+
+    /** True when the clear-layout confirmation popover is visible. */
+    isClearPopoverVisible() {
+      return !!screen.queryByRole('button', { name: /clear all/i });
     },
 
     /** True when the WindMap has spacing ring rendering enabled. */

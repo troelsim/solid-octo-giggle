@@ -58,7 +58,9 @@ export default function App() {
   const [showSpacingRing, setShowSpacingRing] = useState(false);
   const [showRingPopover, setShowRingPopover] = useState(false);
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
+  const [showClearPopover, setShowClearPopover] = useState(false);
   const ringWrapRef = useRef(null);
+  const clearWrapRef = useRef(null);
   const idCounter = useRef(1);
 
   const selected = turbines.find(t => t.id === selectedId) ?? null;
@@ -118,6 +120,7 @@ export default function App() {
     setTurbines([]);
     setSelectedId(null);
     setMode('view');
+    setShowClearPopover(false);
   };
 
   return (
@@ -269,9 +272,19 @@ export default function App() {
                 <button className="btn-text-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
                   Apply to all turbines
                 </button>
-                <button className="btn-text-action btn-text-action--danger" onClick={clearLayout}>
-                  Clear layout
-                </button>
+                <div ref={clearWrapRef} className="clear-wrap">
+                  <button className="btn-text-action btn-text-action--danger" onClick={() => setShowClearPopover(true)}>
+                    Clear layout
+                  </button>
+                  {showClearPopover && (
+                    <Popover wrapperRef={clearWrapRef} onClose={() => setShowClearPopover(false)}>
+                      <p className="popover-title">Clear all {turbines.length} turbine{turbines.length !== 1 ? 's' : ''}?</p>
+                      <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={clearLayout}>
+                        Clear all
+                      </button>
+                    </Popover>
+                  )}
+                </div>
               </div>
             )}
           </>

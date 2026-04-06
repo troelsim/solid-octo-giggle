@@ -239,6 +239,15 @@
   color: var(--color-primary);
 }
 
+.btn-text-action--danger {
+  color: var(--color-accent-red);
+  text-decoration-color: rgba(200, 49, 42, 0.4);
+}
+
+.btn-text-action--danger:active {
+  color: #e04040;
+}
+
 /* ── Spec fields ── */
 .spec-row {
   display: flex;
@@ -354,7 +363,8 @@
 }
 
 /* ── Ring toggle wrapper + popover ── */
-.ring-toggle-wrap {
+.ring-toggle-wrap,
+.clear-wrap {
   position: relative;
 }
 
@@ -440,6 +450,17 @@
 .btn-popover-confirm:active {
   background: rgba(30, 125, 90, 0.32);
   border-color: rgba(42, 170, 120, 0.7);
+}
+
+.btn-popover-confirm--danger {
+  border-color: rgba(200, 49, 42, 0.4);
+  background: rgba(200, 49, 42, 0.12);
+  color: #e57070;
+}
+
+.btn-popover-confirm--danger:active {
+  background: rgba(200, 49, 42, 0.24);
+  border-color: rgba(200, 49, 42, 0.7);
 }
 
 .btn-close {
