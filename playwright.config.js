@@ -6,8 +6,9 @@ module.exports = defineConfig({
   timeout: 30000,
   use: {
     baseURL: 'http://localhost:3000',
-    // Mobile-first viewport — matches the app's design target
-    viewport: { width: 390, height: 844 },
+    // iPhone 14 Pro logical pixels, touch enabled
+    viewport: { width: 393, height: 852 },
+    hasTouch: true,
     // Use the pre-installed Chromium from the system
     launchOptions: {
       executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
