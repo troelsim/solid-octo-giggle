@@ -64,7 +64,7 @@ function makeTurbineIcon(label, selected, moveTarget) {
   });
 }
 
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing }) {
+export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
@@ -158,9 +158,9 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         markersRef.current[t.id] = m;
       }
 
-      // Spacing ring: radius = 2 × rotor diameter (in metres)
+      // Spacing ring: radius = N × rotor diameter (in metres)
       const spec = t.custom ?? fleet;
-      const ringRadius = 2 * (spec?.rotorDiameter ?? 150);
+      const ringRadius = (spacingRingDiameters ?? 2) * (spec?.rotorDiameter ?? 150);
 
       if (showSpacingRing) {
         if (ringsRef.current[t.id]) {
@@ -179,7 +179,7 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         delete ringsRef.current[t.id];
       }
     });
-  }, [turbines, selectedId, mode, showSpacingRing, fleet]);
+  }, [turbines, selectedId, mode, showSpacingRing, spacingRingDiameters, fleet]);
 
   return (
     <div className="wind-map-wrapper">

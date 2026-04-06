@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import WindMap from './WindMap';
 import './App.css';
 
@@ -6,6 +6,27 @@ const FLEET_DEFAULTS = { hubHeight: 120, rotorDiameter: 150, ratedPower: 5.0 };
 
 function getSpec(turbine, fleet) {
   return turbine.custom ?? fleet;
+}
+
+// Generic popover — renders floating content anchored to wrapperRef.
+// Closes on outside click or Escape key.
+function Popover({ wrapperRef, onClose, children }) {
+  useEffect(() => {
+    function handlePointer(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) onClose();
+    }
+    function handleKey(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('pointerdown', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [wrapperRef, onClose]);
+
+  return <div className="popover">{children}</div>;
 }
 
 function SpecField({ label, unit, value, onChange }) {
@@ -35,6 +56,9 @@ export default function App() {
   const [mode, setMode] = useState('view');
   const [fleet, setFleet] = useState(FLEET_DEFAULTS);
   const [showSpacingRing, setShowSpacingRing] = useState(false);
+  const [showRingPopover, setShowRingPopover] = useState(false);
+  const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
+  const ringWrapRef = useRef(null);
   const idCounter = useRef(1);
 
   const selected = turbines.find(t => t.id === selectedId) ?? null;
@@ -103,17 +127,54 @@ export default function App() {
           Wind Farm Designer
         </div>
         <div className="header-right">
-          <button
-            className={`btn-icon btn-ring-toggle${showSpacingRing ? ' btn-ring-toggle--on' : ''}`}
-            onClick={() => setShowSpacingRing(s => !s)}
-            aria-label="Toggle spacing ring"
-            title="Toggle 2D spacing ring"
-          >
-            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
-              <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2"/>
-              <circle cx="10" cy="10" r="2.2" fill="currentColor"/>
-            </svg>
-          </button>
+          <div ref={ringWrapRef} className="ring-toggle-wrap">
+            <button
+              className={`btn-icon btn-ring-toggle${showSpacingRing ? ' btn-ring-toggle--on' : ''}`}
+              onClick={() => {
+                if (showSpacingRing) {
+                  setShowSpacingRing(false);
+                  setShowRingPopover(false);
+                } else {
+                  setShowRingPopover(p => !p);
+                }
+              }}
+              aria-label="Toggle spacing ring"
+              title={showSpacingRing ? `Spacing ring: ${spacingRingDiameters}D — click to hide` : 'Show spacing ring'}
+            >
+              <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+                <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2"/>
+                <circle cx="10" cy="10" r="2.2" fill="currentColor"/>
+              </svg>
+            </button>
+            {showRingPopover && (
+              <Popover wrapperRef={ringWrapRef} onClose={() => setShowRingPopover(false)}>
+                <p className="popover-title">Spacing ring</p>
+                <div className="popover-field">
+                  <input
+                    className="popover-input"
+                    type="number"
+                    min="0.5"
+                    max="20"
+                    step="0.5"
+                    value={spacingRingDiameters}
+                    onChange={e => {
+                      const v = parseFloat(e.target.value);
+                      if (!isNaN(v) && v > 0) setSpacingRingDiameters(v);
+                    }}
+                    autoFocus
+                    aria-label="Number of rotor diameters"
+                  />
+                  <span className="popover-unit">× rotor dia.</span>
+                </div>
+                <button
+                  className="btn-popover-confirm"
+                  onClick={() => { setShowSpacingRing(true); setShowRingPopover(false); }}
+                >
+                  Show ring
+                </button>
+              </Popover>
+            )}
+          </div>
           {mode === 'view' ? (
             <button className="btn-icon btn-add" onClick={() => { setSelectedId(null); setMode('add'); }} aria-label="Add turbine">
               +
@@ -143,6 +204,7 @@ export default function App() {
           onTurbineClick={handleTurbineClick}
           fleet={fleet}
           showSpacingRing={showSpacingRing}
+          spacingRingDiameters={spacingRingDiameters}
         />
       </div>
 

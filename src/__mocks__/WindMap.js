@@ -2,9 +2,14 @@
 // Leaflet does not work in JSDOM, so we replace it with a testable div that
 // exposes the same callback contract: onTurbineClick and onMapClick.
 // Tests that care about map state read data attributes from data-testid="wind-map".
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick }) {
+export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, showSpacingRing, spacingRingDiameters }) {
   return (
-    <div data-testid="wind-map" data-mode={mode}>
+    <div
+      data-testid="wind-map"
+      data-mode={mode}
+      data-show-spacing-ring={showSpacingRing ? 'true' : 'false'}
+      data-spacing-ring-diameters={spacingRingDiameters}
+    >
       {turbines.map((t, i) => (
         <button
           key={t.id}
