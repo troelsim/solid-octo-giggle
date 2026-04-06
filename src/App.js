@@ -133,22 +133,28 @@ export default function App() {
                 Turbine {selectedIndex}
                 {isCustom && <span className="badge">custom</span>}
               </span>
-              <button className="btn-icon btn-close" onClick={() => setSelectedId(null)} aria-label="Deselect">×</button>
+              <div className="header-btns">
+                <button className="btn-sm" onClick={() => setMode('move')}>Move</button>
+                <button className="btn-sm btn-sm-danger" onClick={deleteTurbine}>Delete</button>
+                <button className="btn-icon btn-close" onClick={() => setSelectedId(null)} aria-label="Deselect">×</button>
+              </div>
             </div>
             <div className="spec-row">
               <SpecField label="Hub height" unit="m"  value={selectedSpec.hubHeight}     onChange={v => updateSelectedSpec('hubHeight', v)} />
               <SpecField label="Rotor dia." unit="m"  value={selectedSpec.rotorDiameter} onChange={v => updateSelectedSpec('rotorDiameter', v)} />
               <SpecField label="Power"      unit="MW" value={selectedSpec.ratedPower}    onChange={v => updateSelectedSpec('ratedPower', v)} />
             </div>
-            <div className="action-row">
-              <button className="btn-action" onClick={() => setMode('move')}>Move</button>
-              {isCustom && <button className="btn-action" onClick={resetToFleet}>Reset</button>}
-              {isCustom
-                ? <button className="btn-action" onClick={applyToAll}>Set as fleet</button>
-                : turbines.length > 1 && <button className="btn-action" onClick={applyToAll}>Apply to all</button>
-              }
-              <button className="btn-action btn-danger" onClick={deleteTurbine}>Delete</button>
-            </div>
+            {isCustom && (
+              <div className="panel-secondary">
+                <button className="btn-text-action" onClick={resetToFleet}>Reset to fleet</button>
+                <button className="btn-text-action" onClick={applyToAll}>Set as fleet defaults</button>
+              </div>
+            )}
+            {!isCustom && turbines.length > 1 && (
+              <div className="panel-secondary">
+                <button className="btn-text-action" onClick={applyToAll}>Apply to all turbines</button>
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -164,8 +170,8 @@ export default function App() {
               <SpecField label="Power"      unit="MW" value={fleet.ratedPower}    onChange={v => setFleet(f => ({ ...f, ratedPower: v }))} />
             </div>
             {turbines.length > 0 && (
-              <div className="action-row">
-                <button className="btn-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
+              <div className="panel-secondary">
+                <button className="btn-text-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
                   Apply to all turbines
                 </button>
               </div>

@@ -1,8 +1,6 @@
 /* Wind Farm Designer — uses design tokens from src/styles/tokens.css */
 
 /* ── Layout ── */
-/* position:fixed;inset:0 is the most reliable full-viewport shell on mobile
-   — avoids dvh/overflow issues across browsers and embedded webviews */
 .app {
   position: fixed;
   inset: 0;
@@ -14,6 +12,8 @@
 
 /* ── Header ── */
 .app-header {
+  position: relative;          /* required for z-index to take effect */
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -22,7 +22,6 @@
   background: rgba(255,255,255,0.04);
   border-bottom: 1px solid var(--color-surface-border);
   flex-shrink: 0;
-  z-index: 900;
 }
 
 .app-title {
@@ -41,6 +40,8 @@
 
 /* ── Mode banner ── */
 .mode-banner {
+  position: relative;          /* required for z-index to take effect */
+  z-index: 10;
   background: var(--color-primary);
   color: #fff;
   text-align: center;
@@ -49,7 +50,6 @@
   font-weight: var(--weight-bold);
   letter-spacing: 0.02em;
   flex-shrink: 0;
-  z-index: 900;
 }
 
 /* ── Map area ── */
@@ -57,6 +57,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
+  z-index: 0;
 }
 
 .wind-map-wrapper {
@@ -101,12 +102,12 @@
 
 /* ── Bottom panel ── */
 .bottom-panel {
+  position: relative;          /* required for z-index to take effect */
+  z-index: 10;
   flex-shrink: 0;
-  padding: var(--space-3) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
-  background: rgba(255,255,255,0.04);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  background: rgba(17, 20, 16, 0.96);
   border-top: 1px solid var(--color-surface-border);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .panel-row {
@@ -145,11 +146,73 @@
   color: var(--color-muted);
 }
 
+/* Inline Move/Delete/× buttons in the turbine panel header */
+.header-btns {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-sm {
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-surface-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+
+.btn-sm:active {
+  background: rgba(255,255,255,0.1);
+}
+
+.btn-sm-danger {
+  border-color: rgba(200, 49, 42, 0.35);
+  background: rgba(200, 49, 42, 0.1);
+  color: #f87171;
+}
+
+.btn-sm-danger:active {
+  background: rgba(200, 49, 42, 0.2);
+}
+
+/* Secondary row for Reset / Apply-to-all links */
+.panel-secondary {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-1);
+}
+
+.btn-text-action {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  color: var(--color-primary-light);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(42, 170, 120, 0.4);
+}
+
+.btn-text-action:active {
+  color: var(--color-primary);
+}
+
 /* ── Spec fields ── */
 .spec-row {
   display: flex;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .spec-field {
@@ -202,42 +265,6 @@
   font-size: var(--text-xs);
   color: var(--color-muted);
   white-space: nowrap;
-}
-
-/* ── Action buttons ── */
-.action-row {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.btn-action {
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-surface-border);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  font-family: var(--font-sans);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.btn-action:active {
-  background: rgba(255,255,255,0.1);
-}
-
-.btn-danger {
-  border-color: rgba(200, 49, 42, 0.35);
-  background: rgba(200, 49, 42, 0.1);
-  color: #f87171;
-  margin-left: auto;
-}
-
-.btn-danger:active {
-  background: rgba(200, 49, 42, 0.2);
 }
 
 /* ── Icon / text buttons (header) ── */
