@@ -10,7 +10,7 @@ function getSpec(turbine, fleet) {
 
 // Generic popover — renders floating content anchored to wrapperRef.
 // Closes on outside click or Escape key.
-function Popover({ wrapperRef, onClose, children }) {
+function Popover({ wrapperRef, onClose, above, children }) {
   useEffect(() => {
     function handlePointer(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) onClose();
@@ -26,7 +26,7 @@ function Popover({ wrapperRef, onClose, children }) {
     };
   }, [wrapperRef, onClose]);
 
-  return <div className="popover">{children}</div>;
+  return <div className={`popover${above ? ' popover--above' : ''}`}>{children}</div>;
 }
 
 function SpecField({ label, unit, value, onChange }) {
@@ -277,7 +277,7 @@ export default function App() {
                     Clear layout
                   </button>
                   {showClearPopover && (
-                    <Popover wrapperRef={clearWrapRef} onClose={() => setShowClearPopover(false)}>
+                    <Popover wrapperRef={clearWrapRef} onClose={() => setShowClearPopover(false)} above>
                       <p className="popover-title">Clear all {turbines.length} turbine{turbines.length !== 1 ? 's' : ''}?</p>
                       <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={clearLayout}>
                         Clear all

@@ -59,6 +59,20 @@ test('05 fleet view — turbine count', async ({ page }) => {
   await page.screenshot({ path: `${SCREENSHOTS}/05-fleet-view.png` });
 });
 
+test('07 clear layout — confirmation popover', async ({ page }) => {
+  // Place two turbines then deselect to see fleet panel
+  for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
+    await page.getByRole('button', { name: 'Add turbine' }).click();
+    await page.locator('.wind-map').click(pos);
+    await page.waitForTimeout(200);
+  }
+  await page.getByRole('button', { name: 'Deselect' }).click();
+  // Open the confirmation popover
+  await page.getByRole('button', { name: 'Clear layout' }).click();
+  await expect(page.getByText(/clear all 2 turbines\?/i)).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOTS}/07-clear-layout-popover.png` });
+});
+
 test('06 move mode — move banner', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
