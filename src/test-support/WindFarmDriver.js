@@ -172,5 +172,43 @@ export function createWindFarm() {
     panelView() {
       return screen.queryByRole('textbox', { name: /turbine name/i }) ? 'turbine' : 'fleet';
     },
+
+    /** Click the spacing ring toggle button. */
+    clickRingToggle() {
+      userEvent.click(screen.getByRole('button', { name: /spacing ring/i }));
+    },
+
+    /** True when the ring-configuration popover is visible. */
+    isRingPopoverVisible() {
+      return !!screen.queryByText('Spacing ring');
+    },
+
+    /** The current value of the rotor-diameters input in the popover. */
+    ringDiametersValue() {
+      return parseFloat(screen.getByRole('spinbutton', { name: /rotor diameters/i }).value);
+    },
+
+    /** Change the rotor-diameters input in the popover. */
+    setRingDiameters(value) {
+      fireEvent.change(
+        screen.getByRole('spinbutton', { name: /rotor diameters/i }),
+        { target: { value: String(value) } }
+      );
+    },
+
+    /** Click "Show ring" to confirm and enable the spacing ring. */
+    confirmRingPopover() {
+      userEvent.click(screen.getByRole('button', { name: /show ring/i }));
+    },
+
+    /** True when the WindMap has spacing ring rendering enabled. */
+    isSpacingRingEnabled() {
+      return screen.getByTestId('wind-map').dataset.showSpacingRing === 'true';
+    },
+
+    /** The rotor-diameter multiplier currently passed to the WindMap. */
+    spacingRingDiameters() {
+      return parseFloat(screen.getByTestId('wind-map').dataset.spacingRingDiameters);
+    },
   };
 }
