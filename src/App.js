@@ -74,8 +74,10 @@ export default function App() {
   const [showRingPopover, setShowRingPopover] = useState(false);
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
   const [showClearPopover, setShowClearPopover] = useState(false);
+  const [showDeletePopover, setShowDeletePopover] = useState(false);
   const ringWrapRef = useRef(null);
   const clearWrapRef = useRef(null);
+  const deleteWrapRef = useRef(null);
   const idCounter = useRef(1);
 
   const selected = turbines.find(t => t.id === selectedId) ?? null;
@@ -108,6 +110,7 @@ export default function App() {
   const handleTurbineClick = useCallback((id) => {
     setSelectedId(id);
     setMode('view');
+    setShowDeletePopover(false);
   }, []);
 
   const updateSelectedSpec = (key, value) => {
@@ -129,6 +132,7 @@ export default function App() {
     setTurbines(ts => ts.filter(t => t.id !== selectedId));
     setSelectedId(null);
     setMode('view');
+    setShowDeletePopover(false);
   };
 
   const clearLayout = () => {
@@ -246,7 +250,15 @@ export default function App() {
               </div>
               <div className="header-btns">
                 <button className="btn-sm" onClick={() => setMode('move')}>Move</button>
-                <button className="btn-sm btn-sm-danger" onClick={deleteTurbine}>Delete</button>
+                <div ref={deleteWrapRef} className="delete-wrap">
+                  <button className="btn-sm btn-sm-danger" onClick={() => setShowDeletePopover(true)}>Delete</button>
+                  <Popover anchorRef={deleteWrapRef} open={showDeletePopover} onClose={() => setShowDeletePopover(false)}>
+                    <p className="popover-title">Delete {displayName}?</p>
+                    <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={deleteTurbine}>
+                      Delete
+                    </button>
+                  </Popover>
+                </div>
                 <button className="btn-icon btn-close" onClick={() => setSelectedId(null)} aria-label="Deselect">×</button>
               </div>
             </div>

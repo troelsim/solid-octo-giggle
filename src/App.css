@@ -364,7 +364,8 @@
 
 /* ── Ring toggle wrapper + popover ── */
 .ring-toggle-wrap,
-.clear-wrap {
+.clear-wrap,
+.delete-wrap {
   position: relative;
 }
 

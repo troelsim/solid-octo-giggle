@@ -57,9 +57,25 @@ export function createWindFarm() {
       userEvent.click(screen.getByRole('button', { name: `Turbine ${number}` }));
     },
 
-    /** Click Delete in the selected-turbine panel. */
+    /** Click Delete in the selected-turbine panel to open the confirmation popover. */
     deleteSelectedTurbine() {
-      userEvent.click(screen.getByRole('button', { name: /delete/i }));
+      // Only one Delete button exists while the popover is closed.
+      userEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+    },
+
+    /** Click the confirm Delete button inside the delete confirmation popover. */
+    confirmDeleteTurbine() {
+      // When the popover is open there are two Delete buttons; the confirm
+      // button is rendered via FloatingPortal at the end of <body>, so it
+      // is last in DOM order.
+      const btns = screen.getAllByRole('button', { name: /^delete$/i });
+      userEvent.click(btns[btns.length - 1]);
+    },
+
+    /** True when the delete confirmation popover is visible. */
+    isDeletePopoverVisible() {
+      // Two Delete buttons means the popover is open (trigger + confirm).
+      return screen.queryAllByRole('button', { name: /^delete$/i }).length > 1;
     },
 
     /** Click Move to enter move mode for the selected turbine. */
