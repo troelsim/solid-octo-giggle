@@ -72,6 +72,8 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
   const tileLayerRef = useRef(null);
   const cbRef = useRef({ onMapClick, onTurbineClick, onViewChange });
   const satInitRef = useRef(false);
+  const initialCenter = useRef(center ?? [55.5, 7.9]);
+  const initialZoom = useRef(zoom ?? 10);
   const [satellite, setSatellite] = useState(false);
 
   // Always keep callbacks fresh without re-running effects
@@ -83,8 +85,8 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
   useEffect(() => {
     if (mapRef.current) return;
     const map = L.map(containerRef.current, {
-      center: center ?? [55.5, 7.9],
-      zoom: zoom ?? 10,
+      center: initialCenter.current,
+      zoom: initialZoom.current,
       zoomControl: false,
     });
     L.control.zoom({ position: 'topright' }).addTo(map);
