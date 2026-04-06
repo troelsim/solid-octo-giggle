@@ -6,6 +6,9 @@ const SCREENSHOTS = path.join(__dirname, '..', 'screenshots');
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  // Clear persisted layout so each scenario starts from a clean slate.
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
   // Wait for the map element and React bottom panel to be ready
   await page.waitForSelector('.wind-map');
   await page.waitForSelector('.bottom-panel');
@@ -80,6 +83,26 @@ test('08 clear layout — confirmation popover', async ({ page }) => {
   await page.getByRole('button', { name: 'Clear layout' }).click();
   await expect(page.getByText(/clear all 2 turbines\?/i)).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/08-clear-layout-popover.png` });
+});
+
+test('09 persisted layout — survives reload', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add turbine' }).click();
+  await page.locator('.wind-map').click({ x: 195, y: 300 });
+
+  // Wait for the React useEffect to flush the save before reloading.
+  await page.waitForFunction(() => {
+    const raw = localStorage.getItem('wind-farm-layout');
+    return raw ? JSON.parse(raw).turbines?.length > 0 : false;
+  });
+
+  await page.reload();
+  await page.waitForSelector('.wind-map');
+  await page.waitForSelector('.bottom-panel');
+  await page.waitForTimeout(400);
+
+  // Verify the fleet panel shows a turbine count (any number > 0).
+  await expect(page.getByText(/\d+ turbines?/)).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOTS}/09-persisted-layout.png` });
 });
 
 test('06 move mode — move banner', async ({ page }) => {

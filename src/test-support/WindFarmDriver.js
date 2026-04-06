@@ -16,15 +16,52 @@
 // Note: call jest.mock('../../WindMap') in each test file before importing
 // this driver so that Leaflet is replaced by the testable stub.
 
-import { render, screen, within, fireEvent } from '@testing-library/react';
+import { render, screen, within, fireEvent, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
+import { STORAGE_KEY } from '../hooks/useLayoutStorage';
+
+// ---------------------------------------------------------------------------
+// Storage helpers — call these BEFORE createWindFarm() to seed state, or
+// AFTER actions to assert on what was saved.
+// ---------------------------------------------------------------------------
+
+/** Pre-populate localStorage so the next App mount loads that data. */
+export function seedStorage(layout) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+}
+
+/** Wipe the layout key. Useful in beforeEach to isolate tests. */
+export function clearStorage() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+/** Read the currently-saved layout (or null if nothing saved). */
+export function readStorage() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
 
 // ---------------------------------------------------------------------------
 // Factory — returns the driver object bound to a freshly-rendered App
+//
+// Options:
+//   storage — pre-seeded layout ({ turbines, fleet }) to load from storage.
+//             If omitted the storage key is cleared so each test starts clean.
 // ---------------------------------------------------------------------------
-export function createWindFarm() {
+export function createWindFarm({ storage } = {}) {
+  // Always start from a known-clean storage state so tests don't bleed into
+  // each other.  Callers that need pre-loaded data pass it via `storage`.
+  clearStorage();
+  if (storage) seedStorage(storage);
+
   render(<App />);
+
+  /** Re-mount the App as if the browser were reloaded (localStorage survives). */
+  function reload() {
+    cleanup();
+    render(<App />);
+  }
 
   // ── private helpers ──────────────────────────────────────────────────────
 
@@ -241,5 +278,16 @@ export function createWindFarm() {
     spacingRingDiameters() {
       return parseFloat(screen.getByTestId('wind-map').dataset.spacingRingDiameters);
     },
+
+    /** The layout currently saved in localStorage, or null if nothing saved. */
+    storedLayout() {
+      return readStorage();
+    },
+
+    /**
+     * Simulate a browser page reload: unmounts the App, then mounts it fresh.
+     * localStorage is preserved, so persisted state is restored.
+     */
+    reload,
   };
 }
