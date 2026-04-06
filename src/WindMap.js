@@ -84,11 +84,21 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
   // Init map once — guard prevents StrictMode double-initialisation
   useEffect(() => {
     if (mapRef.current) return;
-    const map = L.map(containerRef.current, {
+    const mapContainer = containerRef.current;
+    const map = L.map(mapContainer, {
       center: initialCenter.current,
       zoom: initialZoom.current,
       zoomControl: false,
     });
+
+    // Keep pinch gestures on the map from triggering browser/page zoom.
+    const blockBrowserZoom = e => {
+      if (e.ctrlKey || e.type.startsWith('gesture')) e.preventDefault();
+    };
+    mapContainer.addEventListener('wheel', blockBrowserZoom, { passive: false });
+    mapContainer.addEventListener('gesturestart', blockBrowserZoom);
+    mapContainer.addEventListener('gesturechange', blockBrowserZoom);
+    mapContainer.addEventListener('gestureend', blockBrowserZoom);
     L.control.zoom({ position: 'topright' }).addTo(map);
     tileLayerRef.current = L.tileLayer(LAYERS.osm.url, {
       attribution: LAYERS.osm.attribution,
@@ -105,6 +115,10 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       markersRef.current = {};
       Object.values(ringsRef.current).forEach(r => r.remove());
       ringsRef.current = {};
+      mapContainer.removeEventListener('wheel', blockBrowserZoom);
+      mapContainer.removeEventListener('gesturestart', blockBrowserZoom);
+      mapContainer.removeEventListener('gesturechange', blockBrowserZoom);
+      mapContainer.removeEventListener('gestureend', blockBrowserZoom);
       map.remove();
       mapRef.current = null;
     };
