@@ -44,12 +44,18 @@ describe('Exporting the layout as CSV', () => {
 
     farm.exportLayoutCsv();
 
+    const csv = [
+      'turbine name,lat,lon,rotor dia,power,hub height',
+      'Alpha,55.1234,7.9876,150,5,120',
+      'Turbine 2,56.2,8.4,165,6.3,140',
+    ].join('\n');
+
     expect(farm.exportedCsvText()).toBe(
-      [
-        'turbine name,lat,lon,rotor dia,power,hub height',
-        'Alpha,55.1234,7.9876,150,5,120',
-        'Turbine 2,56.2,8.4,165,6.3,140',
-      ].join('\n')
+      csv
     );
+    expect(farm.exportedCsvSelection()).toEqual({
+      start: 0,
+      end: csv.length,
+    });
   });
 });

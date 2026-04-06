@@ -98,10 +98,12 @@ export default function App() {
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
   const [showClearPopover, setShowClearPopover] = useState(false);
   const [showDeletePopover, setShowDeletePopover] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [exportCsv, setExportCsv] = useState('');
   const ringWrapRef = useRef(null);
   const clearWrapRef = useRef(null);
   const deleteWrapRef = useRef(null);
+  const exportRef = useRef(null);
   // Derive the starting counter from any loaded turbines so new IDs never collide.
   const idCounter = useRef(
     turbines.length
@@ -169,8 +171,15 @@ export default function App() {
     setSelectedId(null);
     setMode('view');
     setShowClearPopover(false);
+    setShowExportModal(false);
     setExportCsv('');
   };
+
+  useLayoutEffect(() => {
+    if (!showExportModal || !exportRef.current) return;
+    exportRef.current.focus();
+    exportRef.current.select();
+  }, [showExportModal, exportCsv]);
 
   return (
     <div className="app">
@@ -185,6 +194,18 @@ export default function App() {
           Wind Farm Designer
         </div>
         <div className="header-right">
+          <button
+            className="btn-text btn-export"
+            onClick={() => {
+              setExportCsv(buildLayoutCsv(turbines, fleet));
+              setShowExportModal(true);
+            }}
+            disabled={turbines.length === 0}
+            aria-label="Export CSV"
+            title={turbines.length === 0 ? 'Add turbines to export CSV' : 'Export layout as CSV'}
+          >
+            Export
+          </button>
           <div ref={ringWrapRef} className="ring-toggle-wrap">
             <button
               className={`btn-icon btn-ring-toggle${showSpacingRing ? ' btn-ring-toggle--on' : ''}`}
@@ -320,28 +341,6 @@ export default function App() {
                 {turbines.length === 0 ? 'Tap + to add turbines' : `${turbines.length} turbine${turbines.length !== 1 ? 's' : ''}`}
               </span>
             </div>
-            {turbines.length > 0 && (
-              <div className="export-row">
-                <button
-                  className="btn-text-action"
-                  onClick={() => setExportCsv(buildLayoutCsv(turbines, fleet))}
-                >
-                  Export CSV
-                </button>
-              </div>
-            )}
-            {exportCsv && (
-              <div className="export-output">
-                <label className="spec-label" htmlFor="layout-export-csv">CSV export</label>
-                <textarea
-                  id="layout-export-csv"
-                  className="export-textarea"
-                  value={exportCsv}
-                  readOnly
-                  aria-label="Layout CSV export"
-                />
-              </div>
-            )}
             <div className="spec-row">
               <SpecField label="Hub height" unit="m"  value={fleet.hubHeight}     onChange={v => setFleet(f => ({ ...f, hubHeight: v }))} />
               <SpecField label="Rotor dia." unit="m"  value={fleet.rotorDiameter} onChange={v => setFleet(f => ({ ...f, rotorDiameter: v }))} />
@@ -368,6 +367,35 @@ export default function App() {
           </>
         )}
       </div>
+      {showExportModal && (
+        <div className="modal-backdrop" onClick={() => setShowExportModal(false)}>
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="CSV export modal"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="panel-row">
+              <p className="popover-title export-modal-title">Layout CSV export</p>
+              <button
+                className="btn-icon btn-close"
+                onClick={() => setShowExportModal(false)}
+                aria-label="Close CSV export"
+              >
+                ×
+              </button>
+            </div>
+            <textarea
+              ref={exportRef}
+              className="export-textarea"
+              value={exportCsv}
+              readOnly
+              aria-label="Layout CSV export"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

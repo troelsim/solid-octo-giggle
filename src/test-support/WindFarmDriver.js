@@ -310,6 +310,13 @@ export function createWindFarm({ storage } = {}) {
       return field ? field.value : null;
     },
 
+    /** Current text selection bounds inside the export textarea, or null if hidden. */
+    exportedCsvSelection() {
+      const field = screen.queryByRole('textbox', { name: /layout csv export/i });
+      if (!field) return null;
+      return { start: field.selectionStart, end: field.selectionEnd };
+    },
+
     /**
      * Simulate a browser page reload: unmounts the App, then mounts it fresh.
      * localStorage is preserved, so persisted state is restored.
