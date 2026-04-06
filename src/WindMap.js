@@ -71,8 +71,9 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     cbRef.current = { onMapClick, onTurbineClick };
   });
 
-  // Init map once
+  // Init map once — guard prevents StrictMode double-initialisation
   useEffect(() => {
+    if (mapRef.current) return;
     const map = L.map(containerRef.current, {
       center: [55.5, 7.9], // Horns Rev offshore wind farm area
       zoom: 10,
