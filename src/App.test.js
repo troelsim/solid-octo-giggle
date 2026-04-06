@@ -8,5 +8,5 @@ import App from './App';
 
 test('renders without crashing', () => {
   render(<App />);
-  expect(screen.getByText('Wind Farm Designer')).toBeInTheDocument();
+  expect(screen.getByText('PadSketch')).toBeInTheDocument();
 });
