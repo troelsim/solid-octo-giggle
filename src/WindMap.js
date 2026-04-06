@@ -21,7 +21,13 @@ function makeTurbineIcon(num, selected, moveTarget) {
     ? 'var(--color-accent-amber, #e09020)'
     : selected
     ? 'var(--color-primary-light, #2aaa78)'
-    : 'rgba(242,237,230,0.55)';
+    : '#f2ede6';
+  const bgOpacity = selected ? 0.82 : 0.62;
+  const bgColor = moveTarget
+    ? `rgba(40,28,8,${bgOpacity})`
+    : selected
+    ? `rgba(8,28,20,${bgOpacity})`
+    : `rgba(17,20,16,${bgOpacity})`;
   const size = selected ? 44 : 36;
   const c = size / 2;
   const hubR = selected ? 4 : 3;
@@ -42,12 +48,13 @@ function makeTurbineIcon(num, selected, moveTarget) {
   const ring = selected
     ? `<circle cx="${c}" cy="${c}" r="${c - 1.5}" fill="none" stroke="${color}" stroke-width="1" opacity="0.35" ${moveTarget ? 'stroke-dasharray="3 2"' : ''}/>`
     : '';
+  const bgCircle = `<circle cx="${c}" cy="${c}" r="${c - 1}" fill="${bgColor}"/>`;
 
   return L.divIcon({
     className: '',
     html: `<div style="position:relative;width:${size}px;height:${size + 14}px">
       <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="overflow:visible">
-        ${ring}${blades}
+        ${bgCircle}${ring}${blades}
         <circle cx="${c}" cy="${c}" r="${hubR}" fill="${color}"/>
       </svg>
       <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:${color};white-space:nowrap;font-family:system-ui,sans-serif;text-shadow:0 0 4px #111410,0 0 4px #111410">T${num}</div>
