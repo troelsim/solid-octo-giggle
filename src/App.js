@@ -34,6 +34,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [mode, setMode] = useState('view');
   const [fleet, setFleet] = useState(FLEET_DEFAULTS);
+  const [showSpacingRing, setShowSpacingRing] = useState(false);
   const idCounter = useRef(1);
 
   const selected = turbines.find(t => t.id === selectedId) ?? null;
@@ -101,15 +102,28 @@ export default function App() {
           </svg>
           Wind Farm Designer
         </div>
-        {mode === 'view' ? (
-          <button className="btn-icon btn-add" onClick={() => { setSelectedId(null); setMode('add'); }} aria-label="Add turbine">
-            +
+        <div className="header-right">
+          <button
+            className={`btn-icon btn-ring-toggle${showSpacingRing ? ' btn-ring-toggle--on' : ''}`}
+            onClick={() => setShowSpacingRing(s => !s)}
+            aria-label="Toggle spacing ring"
+            title="Toggle 2D spacing ring"
+          >
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+              <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2"/>
+              <circle cx="10" cy="10" r="2.2" fill="currentColor"/>
+            </svg>
           </button>
-        ) : (
-          <button className="btn-text btn-cancel" onClick={() => setMode('view')}>
-            Cancel
-          </button>
-        )}
+          {mode === 'view' ? (
+            <button className="btn-icon btn-add" onClick={() => { setSelectedId(null); setMode('add'); }} aria-label="Add turbine">
+              +
+            </button>
+          ) : (
+            <button className="btn-text btn-cancel" onClick={() => setMode('view')}>
+              Cancel
+            </button>
+          )}
+        </div>
       </header>
 
       {mode !== 'view' && (
@@ -127,6 +141,8 @@ export default function App() {
           mode={mode}
           onMapClick={handleMapClick}
           onTurbineClick={handleTurbineClick}
+          fleet={fleet}
+          showSpacingRing={showSpacingRing}
         />
       </div>
 
