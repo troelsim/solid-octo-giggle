@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/user/solid-octo-giggle && node -e \"\nconst fs = require('fs');\nconst path = require('path');\n\nconst srcStat = fs.readdirSync('src', {recursive:true})\n  .filter(f => /\\\\.(js|css)$/.test(f))\n  .map(f => fs.statSync(path.join('src', f)).mtimeMs)\n  .reduce((a, b) => Math.max(a, b), 0);\n\nconst ssDir = 'screenshots';\nconst ssStat = fs.existsSync(ssDir)\n  ? fs.readdirSync(ssDir).filter(f => f.endsWith('.png'))\n      .map(f => fs.statSync(path.join(ssDir, f)).mtimeMs)\n      .reduce((a, b) => Math.max(a, b), 0)\n  : 0;\n\nif (srcStat > ssStat) {\n  console.error('UI files changed but screenshots not refreshed. Run: npm run screenshot');\n  process.exit(1);\n}\n\"",
+            "statusMessage": "Checking screenshots are up to date..."
+          }
+        ]
+      }
+    ]
+  }
+}
