@@ -108,7 +108,7 @@ export default function App() {
       setSelectedId(null);
       return 'view';
     });
-  }, [selectedId]);
+  }, [selectedId, setTurbines]);
 
   const handleTurbineClick = useCallback((id) => {
     setSelectedId(id);
