@@ -168,10 +168,10 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         } else {
           ringsRef.current[t.id] = L.circle([t.lat, t.lng], {
             radius: ringRadius,
-            color: 'rgba(242, 237, 230, 0.35)',
+            color: 'rgba(242, 237, 230, 0.65)',
             fill: false,
-            weight: 1.5,
-            dashArray: '6 8',
+            weight: 2,
+            dashArray: '5 7',
           }).addTo(map);
         }
       } else if (ringsRef.current[t.id]) {
