@@ -1,4 +1,12 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect } from 'react';
+import {
+  useFloating,
+  useDismiss,
+  useInteractions,
+  flip,
+  offset,
+  FloatingPortal,
+} from '@floating-ui/react';
 import WindMap from './WindMap';
 import './App.css';
 
@@ -8,25 +16,32 @@ function getSpec(turbine, fleet) {
   return turbine.custom ?? fleet;
 }
 
-// Generic popover — renders floating content anchored to wrapperRef.
-// Closes on outside click or Escape key.
-function Popover({ wrapperRef, onClose, children }) {
-  useEffect(() => {
-    function handlePointer(e) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) onClose();
-    }
-    function handleKey(e) {
-      if (e.key === 'Escape') onClose();
-    }
-    document.addEventListener('pointerdown', handlePointer);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointer);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [wrapperRef, onClose]);
+// Generic popover — renders via a portal, auto-flips when near the viewport edge.
+// anchorRef: ref to the DOM element the popover should be anchored to.
+function Popover({ anchorRef, open, onClose, children }) {
+  const { refs, floatingStyles, context } = useFloating({
+    open,
+    onOpenChange: (v) => { if (!v) onClose(); },
+    placement: 'bottom-end',
+    middleware: [offset(8), flip({ padding: 8 })],
+  });
 
-  return <div className="popover">{children}</div>;
+  const dismiss = useDismiss(context);
+  const { getFloatingProps } = useInteractions([dismiss]);
+
+  useLayoutEffect(() => {
+    refs.setReference(anchorRef.current);
+  });
+
+  if (!open) return null;
+
+  return (
+    <FloatingPortal>
+      <div ref={refs.setFloating} style={floatingStyles} className="popover" {...getFloatingProps()}>
+        {children}
+      </div>
+    </FloatingPortal>
+  );
 }
 
 function SpecField({ label, unit, value, onChange }) {
@@ -58,7 +73,11 @@ export default function App() {
   const [showSpacingRing, setShowSpacingRing] = useState(false);
   const [showRingPopover, setShowRingPopover] = useState(false);
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
+  const [showClearPopover, setShowClearPopover] = useState(false);
+  const [showDeletePopover, setShowDeletePopover] = useState(false);
   const ringWrapRef = useRef(null);
+  const clearWrapRef = useRef(null);
+  const deleteWrapRef = useRef(null);
   const idCounter = useRef(1);
 
   const selected = turbines.find(t => t.id === selectedId) ?? null;
@@ -91,6 +110,7 @@ export default function App() {
   const handleTurbineClick = useCallback((id) => {
     setSelectedId(id);
     setMode('view');
+    setShowDeletePopover(false);
   }, []);
 
   const updateSelectedSpec = (key, value) => {
@@ -112,6 +132,14 @@ export default function App() {
     setTurbines(ts => ts.filter(t => t.id !== selectedId));
     setSelectedId(null);
     setMode('view');
+    setShowDeletePopover(false);
+  };
+
+  const clearLayout = () => {
+    setTurbines([]);
+    setSelectedId(null);
+    setMode('view');
+    setShowClearPopover(false);
   };
 
   return (
@@ -146,8 +174,7 @@ export default function App() {
                 <circle cx="10" cy="10" r="2.2" fill="currentColor"/>
               </svg>
             </button>
-            {showRingPopover && (
-              <Popover wrapperRef={ringWrapRef} onClose={() => setShowRingPopover(false)}>
+            <Popover anchorRef={ringWrapRef} open={showRingPopover} onClose={() => setShowRingPopover(false)}>
                 <p className="popover-title">Spacing ring</p>
                 <div className="popover-field">
                   <input
@@ -172,8 +199,7 @@ export default function App() {
                 >
                   Show ring
                 </button>
-              </Popover>
-            )}
+            </Popover>
           </div>
           {mode === 'view' ? (
             <button className="btn-icon btn-add" onClick={() => { setSelectedId(null); setMode('add'); }} aria-label="Add turbine">
@@ -224,7 +250,15 @@ export default function App() {
               </div>
               <div className="header-btns">
                 <button className="btn-sm" onClick={() => setMode('move')}>Move</button>
-                <button className="btn-sm btn-sm-danger" onClick={deleteTurbine}>Delete</button>
+                <div ref={deleteWrapRef} className="delete-wrap">
+                  <button className="btn-sm btn-sm-danger" onClick={() => setShowDeletePopover(true)}>Delete</button>
+                  <Popover anchorRef={deleteWrapRef} open={showDeletePopover} onClose={() => setShowDeletePopover(false)}>
+                    <p className="popover-title">Delete {displayName}?</p>
+                    <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={deleteTurbine}>
+                      Delete
+                    </button>
+                  </Popover>
+                </div>
                 <button className="btn-icon btn-close" onClick={() => setSelectedId(null)} aria-label="Deselect">×</button>
               </div>
             </div>
@@ -263,6 +297,17 @@ export default function App() {
                 <button className="btn-text-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
                   Apply to all turbines
                 </button>
+                <div ref={clearWrapRef} className="clear-wrap">
+                  <button className="btn-text-action btn-text-action--danger" onClick={() => setShowClearPopover(true)}>
+                    Clear layout
+                  </button>
+                  <Popover anchorRef={clearWrapRef} open={showClearPopover} onClose={() => setShowClearPopover(false)}>
+                    <p className="popover-title">Clear all {turbines.length} turbine{turbines.length !== 1 ? 's' : ''}?</p>
+                    <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={clearLayout}>
+                      Clear all
+                    </button>
+                  </Popover>
+                </div>
               </div>
             )}
           </>

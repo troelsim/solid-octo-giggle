@@ -70,6 +70,7 @@ describe('Deleting a turbine', () => {
     farm.addTurbine();
 
     farm.deleteSelectedTurbine();
+    farm.confirmDeleteTurbine();
 
     expect(farm.turbineCount()).toBe(0);
   });
@@ -79,6 +80,7 @@ describe('Deleting a turbine', () => {
     farm.addTurbine();
 
     farm.deleteSelectedTurbine();
+    farm.confirmDeleteTurbine();
 
     expect(farm.panelView()).toBe('fleet');
   });
@@ -91,6 +93,7 @@ describe('Deleting a turbine', () => {
     farm.selectTurbine(2);
 
     farm.deleteSelectedTurbine();
+    farm.confirmDeleteTurbine();
 
     expect(farm.turbineCount()).toBe(2);
   });
