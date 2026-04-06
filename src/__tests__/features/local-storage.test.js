@@ -74,6 +74,44 @@ describe('Local storage persistence', () => {
     });
   });
 
+  describe('map view persistence', () => {
+    it('saves map view when the user pans or zooms', () => {
+      const farm = createWindFarm();
+      farm.changeMapView();
+
+      expect(farm.storedLayout().mapView).toEqual({ center: [56.0, 8.5], zoom: 12 });
+    });
+
+    it('restores map view after a page reload', () => {
+      const farm = createWindFarm();
+      farm.changeMapView();
+      farm.reload();
+
+      expect(farm.mapCenter()).toEqual([56.0, 8.5]);
+      expect(farm.mapZoom()).toBe(12);
+    });
+
+    it('defaults to Horns Rev when nothing is saved', () => {
+      const farm = createWindFarm();
+
+      expect(farm.mapCenter()).toEqual([55.5, 7.9]);
+      expect(farm.mapZoom()).toBe(10);
+    });
+
+    it('restores map view seeded from storage', () => {
+      const farm = createWindFarm({
+        storage: {
+          turbines: [],
+          fleet: FLEET_DEFAULTS,
+          mapView: { center: [57.1, 9.3], zoom: 8 },
+        },
+      });
+
+      expect(farm.mapCenter()).toEqual([57.1, 9.3]);
+      expect(farm.mapZoom()).toBe(8);
+    });
+  });
+
   describe('reload simulation', () => {
     it('turbines survive a page reload', () => {
       const farm = createWindFarm();

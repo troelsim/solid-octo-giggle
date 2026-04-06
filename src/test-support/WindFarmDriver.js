@@ -279,6 +279,21 @@ export function createWindFarm({ storage } = {}) {
       return parseFloat(screen.getByTestId('wind-map').dataset.spacingRingDiameters);
     },
 
+    /** Simulate a user panning/zooming the map to [56.0, 8.5] at zoom 12. */
+    changeMapView() {
+      userEvent.click(screen.getByTestId('map-view-change'));
+    },
+
+    /** Current center [lat, lng] that the WindMap is receiving. */
+    mapCenter() {
+      return JSON.parse(screen.getByTestId('wind-map').dataset.center);
+    },
+
+    /** Current zoom level that the WindMap is receiving. */
+    mapZoom() {
+      return parseInt(screen.getByTestId('wind-map').dataset.zoom, 10);
+    },
+
     /** The layout currently saved in localStorage, or null if nothing saved. */
     storedLayout() {
       return readStorage();
