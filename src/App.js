@@ -15,6 +15,31 @@ function getSpec(turbine, fleet) {
   return turbine.custom ?? fleet;
 }
 
+function escapeCsvCell(value) {
+  const text = String(value ?? '');
+  if (!/[",\n]/.test(text)) return text;
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+function buildLayoutCsv(turbines, fleet) {
+  const header = ['turbine name', 'lat', 'lon', 'rotor dia', 'power', 'hub height'];
+  const rows = turbines.map((turbine, index) => {
+    const spec = getSpec(turbine, fleet);
+    return [
+      turbine.name || `Turbine ${index + 1}`,
+      turbine.lat,
+      turbine.lng,
+      spec.rotorDiameter,
+      spec.ratedPower,
+      spec.hubHeight,
+    ];
+  });
+
+  return [header, ...rows]
+    .map(row => row.map(escapeCsvCell).join(','))
+    .join('\n');
+}
+
 // Generic popover — renders via a portal, auto-flips when near the viewport edge.
 // anchorRef: ref to the DOM element the popover should be anchored to.
 function Popover({ anchorRef, open, onClose, children }) {
@@ -73,6 +98,7 @@ export default function App() {
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
   const [showClearPopover, setShowClearPopover] = useState(false);
   const [showDeletePopover, setShowDeletePopover] = useState(false);
+  const [exportCsv, setExportCsv] = useState('');
   const ringWrapRef = useRef(null);
   const clearWrapRef = useRef(null);
   const deleteWrapRef = useRef(null);
@@ -143,6 +169,7 @@ export default function App() {
     setSelectedId(null);
     setMode('view');
     setShowClearPopover(false);
+    setExportCsv('');
   };
 
   return (
@@ -293,6 +320,28 @@ export default function App() {
                 {turbines.length === 0 ? 'Tap + to add turbines' : `${turbines.length} turbine${turbines.length !== 1 ? 's' : ''}`}
               </span>
             </div>
+            {turbines.length > 0 && (
+              <div className="export-row">
+                <button
+                  className="btn-text-action"
+                  onClick={() => setExportCsv(buildLayoutCsv(turbines, fleet))}
+                >
+                  Export CSV
+                </button>
+              </div>
+            )}
+            {exportCsv && (
+              <div className="export-output">
+                <label className="spec-label" htmlFor="layout-export-csv">CSV export</label>
+                <textarea
+                  id="layout-export-csv"
+                  className="export-textarea"
+                  value={exportCsv}
+                  readOnly
+                  aria-label="Layout CSV export"
+                />
+              </div>
+            )}
             <div className="spec-row">
               <SpecField label="Hub height" unit="m"  value={fleet.hubHeight}     onChange={v => setFleet(f => ({ ...f, hubHeight: v }))} />
               <SpecField label="Rotor dia." unit="m"  value={fleet.rotorDiameter} onChange={v => setFleet(f => ({ ...f, rotorDiameter: v }))} />
