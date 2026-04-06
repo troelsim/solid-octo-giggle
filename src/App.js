@@ -8,9 +8,8 @@ import {
   FloatingPortal,
 } from '@floating-ui/react';
 import WindMap from './WindMap';
+import { useLayoutStorage } from './hooks/useLayoutStorage';
 import './App.css';
-
-const FLEET_DEFAULTS = { hubHeight: 120, rotorDiameter: 150, ratedPower: 5.0 };
 
 function getSpec(turbine, fleet) {
   return turbine.custom ?? fleet;
@@ -66,10 +65,9 @@ function SpecField({ label, unit, value, onChange }) {
 }
 
 export default function App() {
-  const [turbines, setTurbines] = useState([]);
+  const { turbines, setTurbines, fleet, setFleet } = useLayoutStorage();
   const [selectedId, setSelectedId] = useState(null);
   const [mode, setMode] = useState('view');
-  const [fleet, setFleet] = useState(FLEET_DEFAULTS);
   const [showSpacingRing, setShowSpacingRing] = useState(false);
   const [showRingPopover, setShowRingPopover] = useState(false);
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
@@ -78,7 +76,12 @@ export default function App() {
   const ringWrapRef = useRef(null);
   const clearWrapRef = useRef(null);
   const deleteWrapRef = useRef(null);
-  const idCounter = useRef(1);
+  // Derive the starting counter from any loaded turbines so new IDs never collide.
+  const idCounter = useRef(
+    turbines.length
+      ? Math.max(...turbines.map(t => parseInt(t.id.slice(1), 10))) + 1
+      : 1
+  );
 
   const selected = turbines.find(t => t.id === selectedId) ?? null;
   const selectedSpec = selected ? getSpec(selected, fleet) : null;
