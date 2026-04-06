@@ -124,11 +124,13 @@ export function createWindFarm() {
     /**
      * 1-based number shown in the panel title when a turbine is selected,
      * or null when the fleet defaults panel is showing.
+     * Reads from the editable name input's value or placeholder.
      */
     selectedTurbineNumber() {
-      const title = screen.queryByText(/Turbine \d+/);
-      if (!title) return null;
-      const match = title.textContent.match(/\d+/);
+      const input = screen.queryByRole('textbox', { name: /turbine name/i });
+      if (!input) return null;
+      const text = input.value || input.placeholder;
+      const match = text.match(/\d+/);
       return match ? parseInt(match[0], 10) : null;
     },
 
@@ -160,9 +162,15 @@ export function createWindFarm() {
       return screen.getByTestId('wind-map').dataset.mode;
     },
 
+    /** Rename the currently selected turbine. */
+    renameTurbine(name) {
+      const input = screen.getByRole('textbox', { name: /turbine name/i });
+      fireEvent.change(input, { target: { value: name } });
+    },
+
     /** Which panel is visible: 'turbine' (selection) or 'fleet' (defaults). */
     panelView() {
-      return screen.queryByText(/Turbine \d+/) ? 'turbine' : 'fleet';
+      return screen.queryByRole('textbox', { name: /turbine name/i }) ? 'turbine' : 'fleet';
     },
   };
 }

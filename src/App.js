@@ -40,12 +40,17 @@ export default function App() {
   const selectedSpec = selected ? getSpec(selected, fleet) : null;
   const selectedIndex = selected ? turbines.findIndex(t => t.id === selectedId) + 1 : null;
   const isCustom = selected?.custom != null;
+  const displayName = selected?.name || (selectedIndex ? `Turbine ${selectedIndex}` : null);
+
+  const renameTurbine = (name) => {
+    setTurbines(ts => ts.map(t => t.id === selectedId ? { ...t, name } : t));
+  };
 
   const handleMapClick = useCallback((lat, lng) => {
     setMode(prev => {
       if (prev === 'add') {
         const id = `t${idCounter.current++}`;
-        setTurbines(ts => [...ts, { id, lat, lng, custom: null }]);
+        setTurbines(ts => [...ts, { id, lat, lng, custom: null, name: '' }]);
         setSelectedId(id);
         return 'view';
       }
@@ -111,7 +116,7 @@ export default function App() {
         <div className="mode-banner">
           {mode === 'add'
             ? 'Tap the map to place a turbine'
-            : `Tap the map to move Turbine ${selectedIndex}`}
+            : `Tap the map to move ${displayName}`}
         </div>
       )}
 
@@ -129,10 +134,16 @@ export default function App() {
         {selected ? (
           <>
             <div className="panel-row panel-header">
-              <span className="panel-title">
-                Turbine {selectedIndex}
+              <div className="panel-title">
+                <input
+                  className="panel-title-input"
+                  value={selected.name}
+                  placeholder={`Turbine ${selectedIndex}`}
+                  onChange={e => renameTurbine(e.target.value)}
+                  aria-label="Turbine name"
+                />
                 {isCustom && <span className="badge">custom</span>}
-              </span>
+              </div>
               <div className="header-btns">
                 <button className="btn-sm" onClick={() => setMode('move')}>Move</button>
                 <button className="btn-sm btn-sm-danger" onClick={deleteTurbine}>Delete</button>

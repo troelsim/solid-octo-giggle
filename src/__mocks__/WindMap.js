@@ -10,7 +10,7 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
           key={t.id}
           data-testid="turbine-marker"
           data-turbine-id={t.id}
-          aria-label={`Turbine ${i + 1}`}
+          aria-label={t.name || `Turbine ${i + 1}`}
           aria-pressed={t.id === selectedId}
           onClick={() => onTurbineClick(t.id)}
         >
