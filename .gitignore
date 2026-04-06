@@ -18,4 +18,5 @@ yarn-error.log*
 
 # Playwright
 playwright-results/
+test-results/
 screenshots/
