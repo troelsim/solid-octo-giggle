@@ -168,7 +168,7 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         } else {
           ringsRef.current[t.id] = L.circle([t.lat, t.lng], {
             radius: ringRadius,
-            color: 'rgba(242, 237, 230, 0.65)',
+            color: 'rgba(17, 20, 16, 0.75)',
             fill: false,
             weight: 2,
             dashArray: '5 7',
