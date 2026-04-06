@@ -105,6 +105,18 @@ test('09 persisted layout — survives reload', async ({ page }) => {
   await page.screenshot({ path: `${SCREENSHOTS}/09-persisted-layout.png` });
 });
 
+test('10 export layout — csv text field', async ({ page }) => {
+  for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
+    await page.getByRole('button', { name: 'Add turbine' }).click();
+    await page.locator('.wind-map').click(pos);
+    await page.waitForTimeout(200);
+  }
+  await page.getByRole('button', { name: 'Deselect' }).click();
+  await page.getByRole('button', { name: 'Export CSV' }).click();
+  await expect(page.getByRole('textbox', { name: 'Layout CSV export' })).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOTS}/10-export-layout.png` });
+});
+
 test('06 move mode — move banner', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });

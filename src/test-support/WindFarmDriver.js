@@ -259,6 +259,11 @@ export function createWindFarm({ storage } = {}) {
       userEvent.click(screen.getByRole('button', { name: /clear layout/i }));
     },
 
+    /** Build a CSV export for the current layout. */
+    exportLayoutCsv() {
+      userEvent.click(screen.getByRole('button', { name: /export csv/i }));
+    },
+
     /** Click "Clear all" in the confirmation popover to confirm clearing. */
     confirmClearLayout() {
       userEvent.click(screen.getByRole('button', { name: /clear all/i }));
@@ -297,6 +302,19 @@ export function createWindFarm({ storage } = {}) {
     /** The layout currently saved in localStorage, or null if nothing saved. */
     storedLayout() {
       return readStorage();
+    },
+
+    /** CSV text currently shown in the export textarea, or null if hidden. */
+    exportedCsvText() {
+      const field = screen.queryByRole('textbox', { name: /layout csv export/i });
+      return field ? field.value : null;
+    },
+
+    /** Current text selection bounds inside the export textarea, or null if hidden. */
+    exportedCsvSelection() {
+      const field = screen.queryByRole('textbox', { name: /layout csv export/i });
+      if (!field) return null;
+      return { start: field.selectionStart, end: field.selectionEnd };
     },
 
     /**

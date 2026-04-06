@@ -53,6 +53,8 @@ screenshots/05-fleet-view.png
 screenshots/06-move-mode.png
 screenshots/07-delete-turbine-popover.png
 screenshots/08-clear-layout-popover.png
+screenshots/09-persisted-layout.png
+screenshots/10-export-layout.png
 ```
 
 Use what you see to verify the change looks correct on a 393×852 iPhone viewport.

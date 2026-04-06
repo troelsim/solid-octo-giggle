@@ -15,6 +15,31 @@ function getSpec(turbine, fleet) {
   return turbine.custom ?? fleet;
 }
 
+function escapeCsvCell(value) {
+  const text = String(value ?? '');
+  if (!/[",\n]/.test(text)) return text;
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+function buildLayoutCsv(turbines, fleet) {
+  const header = ['turbine name', 'lat', 'lon', 'rotor dia', 'power', 'hub height'];
+  const rows = turbines.map((turbine, index) => {
+    const spec = getSpec(turbine, fleet);
+    return [
+      turbine.name || `Turbine ${index + 1}`,
+      turbine.lat,
+      turbine.lng,
+      spec.rotorDiameter,
+      spec.ratedPower,
+      spec.hubHeight,
+    ];
+  });
+
+  return [header, ...rows]
+    .map(row => row.map(escapeCsvCell).join(','))
+    .join('\n');
+}
+
 // Generic popover — renders via a portal, auto-flips when near the viewport edge.
 // anchorRef: ref to the DOM element the popover should be anchored to.
 function Popover({ anchorRef, open, onClose, children }) {
@@ -73,9 +98,12 @@ export default function App() {
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
   const [showClearPopover, setShowClearPopover] = useState(false);
   const [showDeletePopover, setShowDeletePopover] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportCsv, setExportCsv] = useState('');
   const ringWrapRef = useRef(null);
   const clearWrapRef = useRef(null);
   const deleteWrapRef = useRef(null);
+  const exportRef = useRef(null);
   // Derive the starting counter from any loaded turbines so new IDs never collide.
   const idCounter = useRef(
     turbines.length
@@ -143,7 +171,15 @@ export default function App() {
     setSelectedId(null);
     setMode('view');
     setShowClearPopover(false);
+    setShowExportModal(false);
+    setExportCsv('');
   };
+
+  useLayoutEffect(() => {
+    if (!showExportModal || !exportRef.current) return;
+    exportRef.current.focus();
+    exportRef.current.select();
+  }, [showExportModal, exportCsv]);
 
   return (
     <div className="app">
@@ -158,6 +194,18 @@ export default function App() {
           PadSketch
         </div>
         <div className="header-right">
+          <button
+            className="btn-text btn-export"
+            onClick={() => {
+              setExportCsv(buildLayoutCsv(turbines, fleet));
+              setShowExportModal(true);
+            }}
+            disabled={turbines.length === 0}
+            aria-label="Export CSV"
+            title={turbines.length === 0 ? 'Add turbines to export CSV' : 'Export layout as CSV'}
+          >
+            Export
+          </button>
           <div ref={ringWrapRef} className="ring-toggle-wrap">
             <button
               className={`btn-icon btn-ring-toggle${showSpacingRing ? ' btn-ring-toggle--on' : ''}`}
@@ -319,6 +367,35 @@ export default function App() {
           </>
         )}
       </div>
+      {showExportModal && (
+        <div className="modal-backdrop" onClick={() => setShowExportModal(false)}>
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="CSV export modal"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="panel-row">
+              <p className="popover-title export-modal-title">Layout CSV export</p>
+              <button
+                className="btn-icon btn-close"
+                onClick={() => setShowExportModal(false)}
+                aria-label="Close CSV export"
+              >
+                ×
+              </button>
+            </div>
+            <textarea
+              ref={exportRef}
+              className="export-textarea"
+              value={exportCsv}
+              readOnly
+              aria-label="Layout CSV export"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
