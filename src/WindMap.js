@@ -64,27 +64,27 @@ function makeTurbineIcon(label, selected, moveTarget) {
   });
 }
 
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters }) {
+export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters, center, zoom, onViewChange }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
   const ringsRef = useRef({});
   const tileLayerRef = useRef(null);
-  const cbRef = useRef({ onMapClick, onTurbineClick });
+  const cbRef = useRef({ onMapClick, onTurbineClick, onViewChange });
   const satInitRef = useRef(false);
   const [satellite, setSatellite] = useState(false);
 
   // Always keep callbacks fresh without re-running effects
   useEffect(() => {
-    cbRef.current = { onMapClick, onTurbineClick };
+    cbRef.current = { onMapClick, onTurbineClick, onViewChange };
   });
 
   // Init map once — guard prevents StrictMode double-initialisation
   useEffect(() => {
     if (mapRef.current) return;
     const map = L.map(containerRef.current, {
-      center: [55.5, 7.9], // Horns Rev offshore wind farm area
-      zoom: 10,
+      center: center ?? [55.5, 7.9],
+      zoom: zoom ?? 10,
       zoomControl: false,
     });
     L.control.zoom({ position: 'topright' }).addTo(map);
@@ -93,6 +93,10 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       maxZoom: 19,
     }).addTo(map);
     map.on('click', e => cbRef.current.onMapClick(e.latlng.lat, e.latlng.lng));
+    map.on('moveend', () => {
+      const c = map.getCenter();
+      cbRef.current.onViewChange?.([c.lat, c.lng], map.getZoom());
+    });
     mapRef.current = map;
     return () => {
       Object.values(markersRef.current).forEach(m => m.remove());

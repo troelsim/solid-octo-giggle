@@ -65,7 +65,7 @@ function SpecField({ label, unit, value, onChange }) {
 }
 
 export default function App() {
-  const { turbines, setTurbines, fleet, setFleet } = useLayoutStorage();
+  const { turbines, setTurbines, fleet, setFleet, mapView, setMapView } = useLayoutStorage();
   const [selectedId, setSelectedId] = useState(null);
   const [mode, setMode] = useState('view');
   const [showSpacingRing, setShowSpacingRing] = useState(false);
@@ -234,6 +234,9 @@ export default function App() {
           fleet={fleet}
           showSpacingRing={showSpacingRing}
           spacingRingDiameters={spacingRingDiameters}
+          center={mapView.center}
+          zoom={mapView.zoom}
+          onViewChange={(center, zoom) => setMapView({ center, zoom })}
         />
       </div>
 
