@@ -198,6 +198,9 @@ export default function WindMap({
         });
         m.on('drag', e => {
           const { lat, lng } = e.target.getLatLng();
+          if (ringsRef.current[t.id]) {
+            ringsRef.current[t.id].setLatLng([lat, lng]);
+          }
           cbRef.current.onTurbineDrag?.(t.id, lat, lng);
         });
         m.on('dragend', e => {

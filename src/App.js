@@ -144,11 +144,6 @@ export default function App() {
     setShowDeletePopover(false);
   }, []);
 
-  const handleTurbineDrag = useCallback((id, lat, lng) => {
-    if (mode !== 'move' || id !== selectedId) return;
-    setTurbines(ts => ts.map(t => (t.id === id ? { ...t, lat, lng } : t)));
-  }, [mode, selectedId, setTurbines]);
-
   const handleTurbineDragEnd = useCallback((id, lat, lng) => {
     if (mode !== 'move' || id !== selectedId) return;
     setTurbines(ts => ts.map(t => (t.id === id ? { ...t, lat, lng } : t)));
@@ -290,7 +285,6 @@ export default function App() {
           mode={mode}
           onMapClick={handleMapClick}
           onTurbineClick={handleTurbineClick}
-          onTurbineDrag={handleTurbineDrag}
           onTurbineDragEnd={handleTurbineDragEnd}
           fleet={fleet}
           showSpacingRing={showSpacingRing}
