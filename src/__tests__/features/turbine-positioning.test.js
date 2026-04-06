@@ -6,7 +6,7 @@
 
 jest.mock('../../WindMap');
 
-import { createWindFarm } from '../../test-support/WindFarmDriver';
+import { createWindFarm, readStorage } from '../../test-support/WindFarmDriver';
 
 describe('Moving a turbine', () => {
   it('enters move mode when Move is clicked', () => {
@@ -36,6 +36,17 @@ describe('Moving a turbine', () => {
     farm.confirmMove();
 
     expect(farm.turbineCount()).toBe(1);
+  });
+
+  it('supports dragging the selected turbine in move mode', () => {
+    const farm = createWindFarm();
+    farm.addTurbine();
+    farm.startMovingSelectedTurbine();
+
+    farm.dragSelectedTurbine();
+
+    expect(farm.currentMode()).toBe('view');
+    expect(readStorage().turbines[0]).toMatchObject({ lat: 56.1, lng: 8.7 });
   });
 
   it('aborts the move and returns to view mode on Cancel', () => {

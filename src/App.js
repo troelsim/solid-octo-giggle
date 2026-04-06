@@ -144,6 +144,17 @@ export default function App() {
     setShowDeletePopover(false);
   }, []);
 
+  const handleTurbineDrag = useCallback((id, lat, lng) => {
+    if (mode !== 'move' || id !== selectedId) return;
+    setTurbines(ts => ts.map(t => (t.id === id ? { ...t, lat, lng } : t)));
+  }, [mode, selectedId, setTurbines]);
+
+  const handleTurbineDragEnd = useCallback((id, lat, lng) => {
+    if (mode !== 'move' || id !== selectedId) return;
+    setTurbines(ts => ts.map(t => (t.id === id ? { ...t, lat, lng } : t)));
+    setMode('view');
+  }, [mode, selectedId, setTurbines]);
+
   const updateSelectedSpec = (key, value) => {
     setTurbines(ts => ts.map(t =>
       t.id === selectedId
@@ -268,7 +279,7 @@ export default function App() {
         <div className="mode-banner">
           {mode === 'add'
             ? 'Tap the map to place a turbine'
-            : `Tap the map to move ${displayName}`}
+            : `Tap the map or drag ${displayName} to move`}
         </div>
       )}
 
@@ -279,6 +290,8 @@ export default function App() {
           mode={mode}
           onMapClick={handleMapClick}
           onTurbineClick={handleTurbineClick}
+          onTurbineDrag={handleTurbineDrag}
+          onTurbineDragEnd={handleTurbineDragEnd}
           fleet={fleet}
           showSpacingRing={showSpacingRing}
           spacingRingDiameters={spacingRingDiameters}

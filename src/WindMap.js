@@ -64,13 +64,27 @@ function makeTurbineIcon(label, selected, moveTarget) {
   });
 }
 
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters, center, zoom, onViewChange }) {
+export default function WindMap({
+  turbines,
+  selectedId,
+  mode,
+  onMapClick,
+  onTurbineClick,
+  onTurbineDrag,
+  onTurbineDragEnd,
+  fleet,
+  showSpacingRing,
+  spacingRingDiameters,
+  center,
+  zoom,
+  onViewChange,
+}) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
   const ringsRef = useRef({});
   const tileLayerRef = useRef(null);
-  const cbRef = useRef({ onMapClick, onTurbineClick, onViewChange });
+  const cbRef = useRef({ onMapClick, onTurbineClick, onTurbineDrag, onTurbineDragEnd, onViewChange });
   const satInitRef = useRef(false);
   const initialCenter = useRef(center ?? [55.5, 7.9]);
   const initialZoom = useRef(zoom ?? 10);
@@ -78,7 +92,7 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
 
   // Always keep callbacks fresh without re-running effects
   useEffect(() => {
-    cbRef.current = { onMapClick, onTurbineClick, onViewChange };
+    cbRef.current = { onMapClick, onTurbineClick, onTurbineDrag, onTurbineDragEnd, onViewChange };
   });
 
   // Init map once — guard prevents StrictMode double-initialisation
@@ -168,12 +182,27 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       const zOff = sel ? 1000 : 0;
 
       if (markersRef.current[t.id]) {
-        markersRef.current[t.id].setLatLng([t.lat, t.lng]).setIcon(icon).setZIndexOffset(zOff);
+        markersRef.current[t.id]
+          .setLatLng([t.lat, t.lng])
+          .setIcon(icon)
+          .setZIndexOffset(zOff);
+        if (markersRef.current[t.id].dragging) {
+          if (moving) markersRef.current[t.id].dragging.enable();
+          else markersRef.current[t.id].dragging.disable();
+        }
       } else {
-        const m = L.marker([t.lat, t.lng], { icon, zIndexOffset: zOff }).addTo(map);
+        const m = L.marker([t.lat, t.lng], { icon, zIndexOffset: zOff, draggable: moving }).addTo(map);
         m.on('click', e => {
           L.DomEvent.stopPropagation(e);
           cbRef.current.onTurbineClick(t.id);
+        });
+        m.on('drag', e => {
+          const { lat, lng } = e.target.getLatLng();
+          cbRef.current.onTurbineDrag?.(t.id, lat, lng);
+        });
+        m.on('dragend', e => {
+          const { lat, lng } = e.target.getLatLng();
+          cbRef.current.onTurbineDragEnd?.(t.id, lat, lng);
         });
         markersRef.current[t.id] = m;
       }

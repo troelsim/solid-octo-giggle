@@ -2,7 +2,20 @@
 // Leaflet does not work in JSDOM, so we replace it with a testable div that
 // exposes the same callback contract: onTurbineClick and onMapClick.
 // Tests that care about map state read data attributes from data-testid="wind-map".
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, showSpacingRing, spacingRingDiameters, center, zoom, onViewChange }) {
+export default function WindMap({
+  turbines,
+  selectedId,
+  mode,
+  onMapClick,
+  onTurbineClick,
+  onTurbineDrag,
+  onTurbineDragEnd,
+  showSpacingRing,
+  spacingRingDiameters,
+  center,
+  zoom,
+  onViewChange,
+}) {
   return (
     <div
       data-testid="wind-map"
@@ -28,6 +41,18 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       <button data-testid="map-surface" aria-label="Map surface" onClick={() => onMapClick(55.5, 7.9)}>
         Map
       </button>
+      {mode === 'move' && selectedId && (
+        <button
+          data-testid="drag-selected-turbine"
+          aria-label="Drag selected turbine"
+          onClick={() => {
+            onTurbineDrag?.(selectedId, 56.1, 8.7);
+            onTurbineDragEnd?.(selectedId, 56.1, 8.7);
+          }}
+        >
+          Drag selected turbine
+        </button>
+      )}
       {/* Simulates a user pan/zoom to a known location for testing persistence */}
       <button data-testid="map-view-change" aria-label="Change map view" onClick={() => onViewChange?.([56.0, 8.5], 12)}>
         Change view

@@ -125,6 +125,11 @@ export function createWindFarm({ storage } = {}) {
       userEvent.click(screen.getByTestId('map-surface'));
     },
 
+    /** Drag the selected turbine marker to a new location in move mode. */
+    dragSelectedTurbine() {
+      userEvent.click(screen.getByTestId('drag-selected-turbine'));
+    },
+
     /** Click Cancel to abort add or move mode. */
     cancelAction() {
       userEvent.click(screen.getByRole('button', { name: /cancel/i }));
