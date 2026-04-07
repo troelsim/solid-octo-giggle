@@ -46,8 +46,8 @@ describe('Exporting the layout as CSV', () => {
 
     const csv = [
       'Latitude,Longitude,Name,Description',
-      '55.1234,7.9876,Alpha,"5 MW, 150m rotor, 120m hub"',
-      '56.2,8.4,Turbine 2,"6.3 MW, 165m rotor, 140m hub"',
+      '55.1234,7.9876,Alpha,150 5000 120',
+      '56.2,8.4,Turbine 2,165 6300 140',
     ].join('\n');
 
     expect(farm.exportedCsvText()).toBe(

@@ -25,7 +25,7 @@ function buildLayoutCsv(turbines, fleet) {
   const header = ['Latitude', 'Longitude', 'Name', 'Description'];
   const rows = turbines.map((turbine, index) => {
     const spec = getSpec(turbine, fleet);
-    const description = `${spec.ratedPower} MW, ${spec.rotorDiameter}m rotor, ${spec.hubHeight}m hub`;
+    const description = `${spec.rotorDiameter} ${spec.ratedPower * 1000} ${spec.hubHeight}`;
     return [
       turbine.lat,
       turbine.lng,
