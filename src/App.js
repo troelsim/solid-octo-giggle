@@ -22,16 +22,15 @@ function escapeCsvCell(value) {
 }
 
 function buildLayoutCsv(turbines, fleet) {
-  const header = ['turbine name', 'lat', 'lon', 'rotor dia', 'power', 'hub height'];
+  const header = ['Latitude', 'Longitude', 'Name', 'Description'];
   const rows = turbines.map((turbine, index) => {
     const spec = getSpec(turbine, fleet);
+    const description = `${spec.ratedPower} MW, ${spec.rotorDiameter}m rotor, ${spec.hubHeight}m hub`;
     return [
-      turbine.name || `Turbine ${index + 1}`,
       turbine.lat,
       turbine.lng,
-      spec.rotorDiameter,
-      spec.ratedPower,
-      spec.hubHeight,
+      turbine.name || `Turbine ${index + 1}`,
+      description,
     ];
   });
 
