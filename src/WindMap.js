@@ -64,6 +64,41 @@ function makeTurbineIcon(label, selected, moveTarget) {
   });
 }
 
+// Ghost icon shown at the cursor position during add/move mode.
+// No label; always uses the selected-size and primary-light colour at reduced opacity.
+function makeCursorPreviewIcon() {
+  const size = 44;
+  const c = size / 2;
+  const color = 'var(--color-primary-light, #2aaa78)';
+  const bgColor = 'rgba(8,28,20,0.62)';
+  const hubR = 4;
+  const bladeLen = Math.round(c * 0.72);
+  const tips = [
+    [c, c - bladeLen],
+    [c + bladeLen * 0.866, c + bladeLen * 0.5],
+    [c - bladeLen * 0.866, c + bladeLen * 0.5],
+  ];
+  const blades = tips
+    .map(
+      ([tx, ty]) =>
+        `<line x1="${c}" y1="${c}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>`
+    )
+    .join('');
+  return L.divIcon({
+    className: '',
+    html: `<div style="opacity:0.65;width:${size}px;height:${size}px">
+      <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="overflow:visible">
+        <circle cx="${c}" cy="${c}" r="${c - 1}" fill="${bgColor}"/>
+        <circle cx="${c}" cy="${c}" r="${c - 1.5}" fill="none" stroke="${color}" stroke-width="1" opacity="0.45" stroke-dasharray="3 2"/>
+        ${blades}
+        <circle cx="${c}" cy="${c}" r="${hubR}" fill="${color}"/>
+      </svg>
+    </div>`,
+    iconSize: [size, size],
+    iconAnchor: [c, c],
+  });
+}
+
 export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters, center, zoom, onViewChange }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -71,14 +106,20 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
   const ringsRef = useRef({});
   const tileLayerRef = useRef(null);
   const cbRef = useRef({ onMapClick, onTurbineClick, onViewChange });
+  const previewCfgRef = useRef(null);
+  const cursorMarkerRef = useRef(null);
+  const cursorRingRef = useRef(null);
   const satInitRef = useRef(false);
   const initialCenter = useRef(center ?? [55.5, 7.9]);
   const initialZoom = useRef(zoom ?? 10);
   const [satellite, setSatellite] = useState(false);
 
-  // Always keep callbacks fresh without re-running effects
+  // Always keep callbacks and preview config fresh without re-running effects
   useEffect(() => {
     cbRef.current = { onMapClick, onTurbineClick, onViewChange };
+    previewCfgRef.current = mode !== 'view' ? {
+      mode, turbines, selectedId, fleet, showSpacingRing, spacingRingDiameters,
+    } : null;
   });
 
   // Init map once — guard prevents StrictMode double-initialisation
@@ -109,8 +150,60 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       const c = map.getCenter();
       cbRef.current.onViewChange?.([c.lat, c.lng], map.getZoom());
     });
+
+    // Cursor preview: ghost turbine + spacing ring follow the mouse in add/move mode.
+    // Purely desktop (mousemove); mobile tap-to-place behaviour is unchanged.
+    map.on('mousemove', e => {
+      const cfg = previewCfgRef.current;
+      if (!cfg) return;
+
+      const { latlng } = e;
+
+      // Resolve the spec for ring radius (move → selected turbine's spec; add → fleet defaults).
+      let spec = cfg.fleet;
+      if (cfg.mode === 'move') {
+        const t = cfg.turbines.find(t => t.id === cfg.selectedId);
+        if (t) spec = t.custom ?? cfg.fleet;
+      }
+      const ringRadius = (cfg.spacingRingDiameters ?? 2) * (spec?.rotorDiameter ?? 150);
+
+      // Update or create the preview marker.
+      if (cursorMarkerRef.current) {
+        cursorMarkerRef.current.setLatLng(latlng).setOpacity(1);
+      } else {
+        cursorMarkerRef.current = L.marker(latlng, {
+          icon: makeCursorPreviewIcon(),
+          interactive: false,
+          zIndexOffset: 3000,
+        }).addTo(map);
+      }
+
+      // Update or create the preview ring (always shown during placement for precision).
+      if (cursorRingRef.current) {
+        cursorRingRef.current.setLatLng(latlng).setRadius(ringRadius);
+        cursorRingRef.current.setStyle({ opacity: 1 });
+      } else {
+        cursorRingRef.current = L.circle(latlng, {
+          radius: ringRadius,
+          color: 'rgba(42, 170, 120, 0.75)',
+          fill: false,
+          weight: 2,
+          dashArray: '5 6',
+          interactive: false,
+        }).addTo(map);
+      }
+    });
+
+    // Hide preview when the cursor leaves the map area.
+    map.on('mouseout', () => {
+      if (cursorMarkerRef.current) cursorMarkerRef.current.setOpacity(0);
+      if (cursorRingRef.current) cursorRingRef.current.setStyle({ opacity: 0 });
+    });
+
     mapRef.current = map;
     return () => {
+      if (cursorMarkerRef.current) { cursorMarkerRef.current.remove(); cursorMarkerRef.current = null; }
+      if (cursorRingRef.current) { cursorRingRef.current.remove(); cursorRingRef.current = null; }
       Object.values(markersRef.current).forEach(m => m.remove());
       markersRef.current = {};
       Object.values(ringsRef.current).forEach(r => r.remove());
@@ -168,13 +261,19 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       const zOff = sel ? 1000 : 0;
 
       if (markersRef.current[t.id]) {
-        markersRef.current[t.id].setLatLng([t.lat, t.lng]).setIcon(icon).setZIndexOffset(zOff);
+        markersRef.current[t.id]
+          .setLatLng([t.lat, t.lng])
+          .setIcon(icon)
+          .setZIndexOffset(zOff)
+          // Fade the original turbine badge while its ghost is following the cursor.
+          .setOpacity(moving ? 0.3 : 1);
       } else {
         const m = L.marker([t.lat, t.lng], { icon, zIndexOffset: zOff }).addTo(map);
         m.on('click', e => {
           L.DomEvent.stopPropagation(e);
           cbRef.current.onTurbineClick(t.id);
         });
+        if (moving) m.setOpacity(0.3);
         markersRef.current[t.id] = m;
       }
 
@@ -199,6 +298,18 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         delete ringsRef.current[t.id];
       }
     });
+
+    // Remove cursor preview when returning to view mode (mode exits add/move).
+    if (mode === 'view') {
+      if (cursorMarkerRef.current) {
+        cursorMarkerRef.current.remove();
+        cursorMarkerRef.current = null;
+      }
+      if (cursorRingRef.current) {
+        cursorRingRef.current.remove();
+        cursorRingRef.current = null;
+      }
+    }
   }, [turbines, selectedId, mode, showSpacingRing, spacingRingDiameters, fleet]);
 
   return (
