@@ -128,3 +128,24 @@ test('06 move mode — move banner', async ({ page }) => {
   }
   await page.screenshot({ path: `${SCREENSHOTS}/06-move-mode.png` });
 });
+
+test('11 add mode — cursor preview ghost at hover position', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add turbine' }).click();
+  // Hover over the map so the ghost turbine + ring appear at that position.
+  await page.locator('.wind-map').hover({ position: { x: 195, y: 300 } });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${SCREENSHOTS}/11-add-preview.png` });
+});
+
+test('12 move mode — cursor preview ghost while original fades', async ({ page }) => {
+  // Place a turbine near centre.
+  await page.getByRole('button', { name: 'Add turbine' }).click();
+  await page.locator('.wind-map').click({ x: 195, y: 300 });
+  await page.waitForTimeout(400);
+  // Enter move mode.
+  await page.getByRole('button', { name: 'Move' }).click();
+  // Hover at a different position to show the ghost while the original is faded.
+  await page.locator('.wind-map').hover({ position: { x: 280, y: 200 } });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${SCREENSHOTS}/12-move-preview.png` });
+});
