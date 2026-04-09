@@ -85,6 +85,8 @@ function parseLayoutCsv(text) {
         : null;
     return { lat, lng, name, custom };
   });
+}
+
 // Returns true when the viewport is wide enough for the desktop layout (≥640 px).
 // Defaults to false (mobile) in JSDOM where matchMedia is unavailable.
 function useIsDesktop() {
