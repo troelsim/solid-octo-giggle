@@ -40,7 +40,10 @@
 
 /* ── Mode banner ── */
 .mode-banner {
-  position: relative;          /* required for z-index to take effect */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
   background: var(--color-primary);
   color: #fff;
@@ -49,7 +52,6 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
   letter-spacing: 0.02em;
-  flex-shrink: 0;
 }
 
 /* ── Map area ── */

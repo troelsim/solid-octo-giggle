@@ -367,15 +367,14 @@ export default function App() {
         </div>
       </header>
 
-      {mode !== 'view' && (
-        <div className="mode-banner">
-          {mode === 'add'
-            ? 'Tap the map to place a turbine'
-            : `Tap the map to move ${displayName}`}
-        </div>
-      )}
-
       <div className="map-area">
+        {mode !== 'view' && (
+          <div className="mode-banner">
+            {mode === 'add'
+              ? 'Tap the map to place a turbine'
+              : `Tap the map to move ${displayName}`}
+          </div>
+        )}
         <WindMap
           turbines={turbines}
           selectedId={selectedId}
