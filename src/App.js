@@ -59,7 +59,7 @@ function useIsDesktop() {
 
 // Generic popover — renders via a portal, auto-flips when near the viewport edge.
 // anchorRef: ref to the DOM element the popover should be anchored to.
-function Popover({ anchorRef, open, onClose, children }) {
+function Popover({ anchorRef, open, onClose, children, className }) {
   const { refs, floatingStyles, context } = useFloating({
     open,
     onOpenChange: (v) => { if (!v) onClose(); },
@@ -78,7 +78,7 @@ function Popover({ anchorRef, open, onClose, children }) {
 
   return (
     <FloatingPortal>
-      <div ref={refs.setFloating} style={floatingStyles} className="popover" {...getFloatingProps()}>
+      <div ref={refs.setFloating} style={floatingStyles} className={className ? `popover ${className}` : 'popover'} {...getFloatingProps()}>
         {children}
       </div>
     </FloatingPortal>
@@ -327,7 +327,7 @@ export default function App() {
                   <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 0 1-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 0 1 .947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 0 1 2.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 0 1 2.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 0 1 .947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 0 1-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 0 1-2.287-.947zM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" clipRule="evenodd"/>
                 </svg>
               </button>
-              <Popover anchorRef={settingsWrapRef} open={showSettingsPopover} onClose={() => setShowSettingsPopover(false)}>
+              <Popover anchorRef={settingsWrapRef} open={showSettingsPopover} onClose={() => setShowSettingsPopover(false)} className="settings-popover">
                 <p className="popover-title">Fleet defaults</p>
                 <div className="spec-row">
                   <SpecField label="Hub height" unit="m"  value={fleet.hubHeight}     onChange={v => setFleet(f => ({ ...f, hubHeight: v }))} />

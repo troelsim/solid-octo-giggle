@@ -405,9 +405,15 @@
 }
 
 /* ── Desktop turbine popover ── */
-/* Wide enough for three spec fields side-by-side. */
 .turbine-popover {
-  min-width: 272px;
+  min-width: 220px;
+}
+
+/* Stack spec fields vertically inside the desktop popovers so they don't
+   stretch into oblong rectangles. */
+.turbine-popover .spec-row,
+.settings-popover .spec-row {
+  flex-direction: column;
 }
 
 .popover {
