@@ -7,6 +7,38 @@ jest.mock('../../WindMap');
 import { createWindFarm } from '../../test-support/WindFarmDriver';
 
 describe('Exporting the layout as CSV', () => {
+
+  it('quotes special characters in exported names so CSV stays valid', () => {
+    const farm = createWindFarm({
+      storage: {
+        turbines: [
+          {
+            id: 't1',
+            lat: 55.1234,
+            lng: 7.9876,
+            name: 'Alpha, "Beta"\nGamma',
+            custom: null,
+          },
+        ],
+        fleet: {
+          hubHeight: 120,
+          rotorDiameter: 150,
+          ratedPower: 5,
+        },
+        mapView: {
+          center: [55.5, 7.9],
+          zoom: 10,
+        },
+      },
+    });
+
+    farm.exportLayoutCsv();
+
+    expect(farm.exportedCsvText()).toBe([
+      'Latitude,Longitude,Name,Description',
+      '55.1234,7.9876,"Alpha, ""Beta""\nGamma",150 5000 120',
+    ].join('\n'));
+  });
   it('exports in Latitude,Longitude,Name,Description order with specs as description', () => {
     const farm = createWindFarm({
       storage: {
