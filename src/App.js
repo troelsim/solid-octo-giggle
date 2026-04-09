@@ -39,6 +39,53 @@ function buildLayoutCsv(turbines, fleet) {
     .join('\n');
 }
 
+function parseCsvRow(line) {
+  const cells = [];
+  let pos = 0;
+  while (pos < line.length) {
+    if (line[pos] === '"') {
+      pos++;
+      let cell = '';
+      while (pos < line.length) {
+        if (line[pos] === '"') {
+          if (line[pos + 1] === '"') { cell += '"'; pos += 2; }
+          else { pos++; break; }
+        } else {
+          cell += line[pos++];
+        }
+      }
+      cells.push(cell);
+      if (line[pos] === ',') pos++;
+    } else {
+      const comma = line.indexOf(',', pos);
+      if (comma === -1) { cells.push(line.slice(pos)); break; }
+      cells.push(line.slice(pos, comma));
+      pos = comma + 1;
+    }
+  }
+  if (line.endsWith(',')) cells.push('');
+  return cells;
+}
+
+function parseLayoutCsv(text) {
+  const lines = text.trim().split('\n').map(l => l.trimEnd()).filter(Boolean);
+  if (lines.length < 2) throw new Error('CSV needs a header row and at least one turbine');
+  return lines.slice(1).map((line, i) => {
+    const cells = parseCsvRow(line);
+    const lat = parseFloat(cells[0]);
+    const lng = parseFloat(cells[1]);
+    if (!isFinite(lat) || !isFinite(lng)) throw new Error(`Row ${i + 2}: invalid coordinates`);
+    const name = cells[2] ?? '';
+    const description = cells[3] ?? '';
+    const parts = description.split(' ').map(Number);
+    const custom =
+      parts.length === 3 && parts.every(v => isFinite(v) && v > 0)
+        ? { rotorDiameter: parts[0], ratedPower: parts[1] / 1000, hubHeight: parts[2] }
+        : null;
+    return { lat, lng, name, custom };
+  });
+}
+
 // Generic popover — renders via a portal, auto-flips when near the viewport edge.
 // anchorRef: ref to the DOM element the popover should be anchored to.
 function Popover({ anchorRef, open, onClose, children }) {
@@ -99,10 +146,15 @@ export default function App() {
   const [showDeletePopover, setShowDeletePopover] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportCsv, setExportCsv] = useState('');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importCsvText, setImportCsvText] = useState('');
+  const [showImportConfirm, setShowImportConfirm] = useState(false);
+  const [importError, setImportError] = useState('');
   const ringWrapRef = useRef(null);
   const clearWrapRef = useRef(null);
   const deleteWrapRef = useRef(null);
   const exportRef = useRef(null);
+  const importConfirmRef = useRef(null);
   // Derive the starting counter from any loaded turbines so new IDs never collide.
   const idCounter = useRef(
     turbines.length
@@ -174,6 +226,37 @@ export default function App() {
     setExportCsv('');
   };
 
+  const closeImportModal = () => {
+    setShowImportModal(false);
+    setShowImportConfirm(false);
+    setImportCsvText('');
+    setImportError('');
+  };
+
+  const handleImportSubmit = () => {
+    try {
+      parseLayoutCsv(importCsvText);
+      setImportError('');
+      setShowImportConfirm(true);
+    } catch (e) {
+      setImportError(e.message);
+      setShowImportConfirm(false);
+    }
+  };
+
+  const executeImport = () => {
+    try {
+      const rows = parseLayoutCsv(importCsvText);
+      setTurbines(rows.map(row => ({ id: `t${idCounter.current++}`, ...row })));
+      setSelectedId(null);
+      setMode('view');
+      closeImportModal();
+    } catch (e) {
+      setImportError(e.message);
+      setShowImportConfirm(false);
+    }
+  };
+
   useLayoutEffect(() => {
     if (!showExportModal || !exportRef.current) return;
     exportRef.current.focus();
@@ -204,6 +287,14 @@ export default function App() {
             title={turbines.length === 0 ? 'Add turbines to export CSV' : 'Export layout as CSV'}
           >
             Export
+          </button>
+          <button
+            className="btn-text btn-import"
+            onClick={() => setShowImportModal(true)}
+            aria-label="Import CSV"
+            title="Import layout from CSV"
+          >
+            Import
           </button>
           <div ref={ringWrapRef} className="ring-toggle-wrap">
             <button
@@ -392,6 +483,62 @@ export default function App() {
               readOnly
               aria-label="Layout CSV export"
             />
+          </div>
+        </div>
+      )}
+      {showImportModal && (
+        <div className="modal-backdrop" onClick={closeImportModal}>
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="CSV import modal"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="panel-row">
+              <p className="popover-title export-modal-title">Import layout CSV</p>
+              <button
+                className="btn-icon btn-close"
+                onClick={closeImportModal}
+                aria-label="Close CSV import"
+              >
+                ×
+              </button>
+            </div>
+            {importError && (
+              <p className="import-error" role="alert">{importError}</p>
+            )}
+            <textarea
+              className="export-textarea"
+              value={importCsvText}
+              onChange={e => { setImportCsvText(e.target.value); setImportError(''); }}
+              placeholder={'Latitude,Longitude,Name,Description\n55.1,7.9,Turbine 1,150 5000 120'}
+              aria-label="CSV to import"
+            />
+            <div ref={importConfirmRef} className="import-confirm-wrap">
+              <button
+                className="btn-popover-confirm"
+                disabled={!importCsvText.trim()}
+                onClick={handleImportSubmit}
+                aria-label="Import layout"
+              >
+                Import
+              </button>
+              <Popover anchorRef={importConfirmRef} open={showImportConfirm} onClose={() => setShowImportConfirm(false)}>
+                <p className="popover-title">
+                  {turbines.length > 0
+                    ? `Replace ${turbines.length} turbine${turbines.length !== 1 ? 's' : ''}?`
+                    : 'Import layout?'}
+                </p>
+                <button
+                  className="btn-popover-confirm btn-popover-confirm--danger"
+                  onClick={executeImport}
+                  aria-label="Replace layout"
+                >
+                  Replace layout
+                </button>
+              </Popover>
+            </div>
           </div>
         </div>
       )}

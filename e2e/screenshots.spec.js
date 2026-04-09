@@ -149,3 +149,19 @@ test('12 move mode — cursor preview ghost while original fades', async ({ page
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${SCREENSHOTS}/12-move-preview.png` });
 });
+
+test('13 import layout — confirmation popover', async ({ page }) => {
+  // Place a turbine so there is something to overwrite.
+  await page.getByRole('button', { name: 'Add turbine' }).click();
+  await page.locator('.wind-map').click({ x: 195, y: 300 });
+  await page.waitForTimeout(200);
+  // Open the import modal.
+  await page.getByRole('button', { name: 'Import CSV' }).click();
+  // Paste a CSV.
+  const csv = 'Latitude,Longitude,Name,Description\n55.1,7.9,Alpha,V80-2.0MW';
+  await page.getByRole('textbox', { name: 'CSV to import' }).fill(csv);
+  // Click Import to trigger the confirmation popover.
+  await page.getByRole('button', { name: 'Import layout' }).click();
+  await expect(page.getByRole('button', { name: 'Replace layout' })).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOTS}/13-import-confirm.png` });
+});
