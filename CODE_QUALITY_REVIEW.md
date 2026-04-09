@@ -144,6 +144,6 @@ _Date: 2026-04-09_
 
 - [ ] Add README with setup/test/build/contribution guidance.
 - [ ] Add lint/format scripts and enforce in CI.
-- [ ] Remove unused `Card`/`Button` and jokes data if unused.
+- [x] Remove unused `Card`/`Button` and jokes data if unused.
 - [ ] Extract CSV functions from `App.js`.
 - [ ] Create shared turbine editor component for desktop/mobile reuse.
