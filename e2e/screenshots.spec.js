@@ -9,9 +9,9 @@ test.beforeEach(async ({ page }) => {
   // Clear persisted layout so each scenario starts from a clean slate.
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  // Wait for the map element and React bottom panel to be ready
+  // Wait for the map and header to be ready (bottom-panel absent on desktop)
   await page.waitForSelector('.wind-map');
-  await page.waitForSelector('.bottom-panel');
+  await page.waitForSelector('.app-header');
   await page.waitForTimeout(400);
 });
 
@@ -97,7 +97,7 @@ test('09 persisted layout — survives reload', async ({ page }) => {
 
   await page.reload();
   await page.waitForSelector('.wind-map');
-  await page.waitForSelector('.bottom-panel');
+  await page.waitForSelector('.app-header');
   await page.waitForTimeout(400);
 
   // Verify the fleet panel shows a turbine count (any number > 0).
@@ -164,4 +164,49 @@ test('13 import layout — confirmation popover', async ({ page }) => {
   await page.getByRole('button', { name: 'Import layout' }).click();
   await expect(page.getByRole('button', { name: 'Replace layout' })).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/13-import-confirm.png` });
+// ── Desktop layout (1280 × 800, no touch) ────────────────────────────────────
+
+test.describe('desktop layout', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, hasTouch: false });
+
+  test('13 desktop — settings popover shows fleet defaults', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.waitForSelector('.wind-map');
+    await page.waitForTimeout(400);
+    await page.getByRole('button', { name: 'Fleet settings' }).click();
+    await expect(page.getByText('Fleet defaults')).toBeVisible();
+    await page.screenshot({ path: `${SCREENSHOTS}/13-desktop-settings-popover.png` });
+  });
+
+  test('14 desktop — turbine popover on turbine selection', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.waitForSelector('.wind-map');
+    await page.waitForTimeout(400);
+    await page.getByRole('button', { name: 'Add turbine' }).click();
+    await page.locator('.wind-map').click({ x: 640, y: 400 });
+    await page.waitForTimeout(400);
+    // Turbine popover should be visible with spec fields and action buttons
+    await expect(page.getByRole('textbox', { name: 'Turbine name' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
+    await page.screenshot({ path: `${SCREENSHOTS}/14-desktop-turbine-popover.png` });
+  });
+
+  test('15 desktop — move mode hides turbine popover', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.waitForSelector('.wind-map');
+    await page.waitForTimeout(400);
+    await page.getByRole('button', { name: 'Add turbine' }).click();
+    await page.locator('.wind-map').click({ x: 640, y: 400 });
+    await page.waitForTimeout(400);
+    await page.getByRole('button', { name: 'Move' }).click();
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: `${SCREENSHOTS}/15-desktop-move-mode.png` });
+  });
 });

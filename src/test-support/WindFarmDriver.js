@@ -226,6 +226,22 @@ export function createWindFarm({ storage } = {}) {
       return screen.queryByRole('textbox', { name: /turbine name/i }) ? 'turbine' : 'fleet';
     },
 
+    /** Open the fleet-settings popover (desktop layout, gear icon in header). */
+    openSettings() {
+      userEvent.click(screen.getByRole('button', { name: /fleet settings/i }));
+    },
+
+    /** True when the fleet-settings popover is visible. */
+    isSettingsPopoverVisible() {
+      return !!screen.queryByRole('button', { name: /fleet settings/i }) &&
+        !!screen.queryByText('Fleet defaults');
+    },
+
+    /** Close the fleet-settings popover by clicking the gear button again. */
+    closeSettings() {
+      userEvent.click(screen.getByRole('button', { name: /fleet settings/i }));
+    },
+
     /** Click the spacing ring toggle button. */
     clickRingToggle() {
       userEvent.click(screen.getByRole('button', { name: /spacing ring/i }));

@@ -99,7 +99,7 @@ function makeCursorPreviewIcon() {
   });
 }
 
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters, center, zoom, onViewChange }) {
+export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters, center, zoom, onViewChange, onSelectedTurbineMove }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
@@ -116,7 +116,7 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
 
   // Always keep callbacks and preview config fresh without re-running effects
   useEffect(() => {
-    cbRef.current = { onMapClick, onTurbineClick, onViewChange };
+    cbRef.current = { onMapClick, onTurbineClick, onViewChange, selectedId, turbines, onSelectedTurbineMove };
     previewCfgRef.current = mode !== 'view' ? {
       mode, turbines, selectedId, fleet, showSpacingRing, spacingRingDiameters,
     } : null;
@@ -145,10 +145,24 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       attribution: LAYERS.osm.attribution,
       maxZoom: 19,
     }).addTo(map);
-    map.on('click', e => cbRef.current.onMapClick(e.latlng.lat, e.latlng.lng));
+    map.on('click', e => {
+      const { clientX: x, clientY: y } = e.originalEvent;
+      cbRef.current.onMapClick(e.latlng.lat, e.latlng.lng, { x, y });
+    });
     map.on('moveend', () => {
       const c = map.getCenter();
       cbRef.current.onViewChange?.([c.lat, c.lng], map.getZoom());
+    });
+    // Emit updated screen position for the selected turbine while the map pans/zooms,
+    // so the desktop turbine popover tracks the marker smoothly.
+    map.on('move', () => {
+      const { selectedId, turbines: ts, onSelectedTurbineMove } = cbRef.current;
+      if (!selectedId || !onSelectedTurbineMove) return;
+      const t = (ts || []).find(t => t.id === selectedId);
+      if (!t) return;
+      const containerRect = mapRef.current.getContainer().getBoundingClientRect();
+      const pt = mapRef.current.latLngToContainerPoint([t.lat, t.lng]);
+      onSelectedTurbineMove({ x: containerRect.left + pt.x, y: containerRect.top + pt.y });
     });
 
     // Cursor preview: ghost turbine + spacing ring follow the mouse in add/move mode.
@@ -271,7 +285,8 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         const m = L.marker([t.lat, t.lng], { icon, zIndexOffset: zOff }).addTo(map);
         m.on('click', e => {
           L.DomEvent.stopPropagation(e);
-          cbRef.current.onTurbineClick(t.id);
+          const { clientX: x, clientY: y } = e.originalEvent;
+          cbRef.current.onTurbineClick(t.id, { x, y });
         });
         if (moving) m.setOpacity(0.3);
         markersRef.current[t.id] = m;
