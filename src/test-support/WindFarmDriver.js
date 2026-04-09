@@ -280,6 +280,34 @@ export function createWindFarm({ storage } = {}) {
       userEvent.click(screen.getByRole('button', { name: /export csv/i }));
     },
 
+    /** Click the Import CSV button in the header to open the import modal. */
+    openImportModal() {
+      userEvent.click(screen.getByRole('button', { name: /^import csv$/i }));
+    },
+
+    /** Paste CSV text into the import textarea. */
+    pasteImportCsv(text) {
+      fireEvent.change(
+        screen.getByRole('textbox', { name: /csv to import/i }),
+        { target: { value: text } }
+      );
+    },
+
+    /** Click the Import button inside the modal to validate and show the confirmation. */
+    submitImport() {
+      userEvent.click(screen.getByRole('button', { name: /^import layout$/i }));
+    },
+
+    /** Click Replace layout in the confirmation popover to execute the import. */
+    confirmImport() {
+      userEvent.click(screen.getByRole('button', { name: /replace layout/i }));
+    },
+
+    /** Dismiss the import confirmation popover via Escape. */
+    dismissImportConfirm() {
+      fireEvent.keyDown(document, { key: 'Escape' });
+    },
+
     /** Click "Clear all" in the confirmation popover to confirm clearing. */
     confirmClearLayout() {
       userEvent.click(screen.getByRole('button', { name: /clear all/i }));
@@ -331,6 +359,27 @@ export function createWindFarm({ storage } = {}) {
       const field = screen.queryByRole('textbox', { name: /layout csv export/i });
       if (!field) return null;
       return { start: field.selectionStart, end: field.selectionEnd };
+    },
+
+    /** True when the CSV import modal dialog is visible. */
+    isImportModalVisible() {
+      return !!screen.queryByRole('dialog', { name: /csv import modal/i });
+    },
+
+    /** True when the import confirmation popover is visible. */
+    isImportConfirmVisible() {
+      return !!screen.queryByRole('button', { name: /replace layout/i });
+    },
+
+    /** Error message from the import modal, or null if none shown. */
+    importErrorText() {
+      const el = screen.queryByRole('alert');
+      return el ? el.textContent : null;
+    },
+
+    /** True when the Import button inside the modal is disabled (textarea empty). */
+    isImportSubmitDisabled() {
+      return screen.getByRole('button', { name: /^import layout$/i }).disabled;
     },
 
     /**
