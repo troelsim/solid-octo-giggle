@@ -379,8 +379,35 @@
 /* ── Ring toggle wrapper + popover ── */
 .ring-toggle-wrap,
 .clear-wrap,
-.delete-wrap {
+.delete-wrap,
+.settings-wrap {
   position: relative;
+}
+
+/* ── Settings gear button ── */
+.btn-settings {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25) !important;
+  background: rgba(255,255,255,0.08);
+  color: rgba(242, 237, 230, 0.75);
+}
+
+.btn-settings--on {
+  background: rgba(30, 125, 90, 0.2);
+  border-color: rgba(42, 170, 120, 0.5) !important;
+  color: var(--color-primary-light);
+}
+
+.btn-settings:active {
+  background: rgba(255,255,255,0.1);
+}
+
+/* ── Desktop turbine popover ── */
+/* Wide enough for three spec fields side-by-side. */
+.turbine-popover {
+  min-width: 272px;
 }
 
 .popover {
