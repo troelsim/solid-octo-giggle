@@ -45,11 +45,11 @@ _Date: 2026-04-09_
 - **Effort:** Medium.
 - **First step:** Add a runtime schema validator (e.g., Zod) for turbine/fleet/mapView models; validate both `loadSaved()` and parsed CSV rows before state writes.
 
-### 4) Move CSV parsing/serialization into dedicated, tested utilities
-- **Why this matters:** CSV behavior currently lives inside `App.js` and is tightly coupled to UI.
-- **Risk today:** Hard to test edge cases in isolation and hard to evolve format/versioning.
-- **Effort:** Medium.
-- **First step:** Create `src/utils/layoutCsv.js` with `buildLayoutCsv`, `parseLayoutCsv`, and targeted unit tests for quoting/newline edge cases.
+### 4) ~~Move CSV parsing/serialization into dedicated, tested utilities~~ ✅ Done
+- **Completed:** `src/utils/layoutCsv.js` extracted with `buildLayoutCsv`, `parseCsvRecords`, and `parseLayoutCsv`.
+- Unit tests in `src/__tests__/features/layout-csv-utils.test.js` cover quoting, newline, CRLF, and unterminated-field edge cases.
+- Integration tests in `src/__tests__/features/import-layout.test.js` and `export-layout.test.js` cover the full round-trip.
+- A library replacement (PapaParse) was evaluated and ruled out: the format is self-generated, the parser is already RFC 4180-compliant, and adding a library would increase bundle size without benefit for this constrained use case.
 
 ### 5) Add baseline engineering guardrails (lint/format/typecheck)
 - **Why this matters:** The repo currently has no explicit scripts for linting/formatting/type-checking in CI-style workflows.
@@ -132,7 +132,7 @@ _Date: 2026-04-09_
 ## Suggested implementation order (first 6 PRs)
 
 1. **PR 1:** README + package metadata alignment + remove dead files.
-2. **PR 2:** Extract CSV utils + dedicated tests.
+2. ~~**PR 2:** Extract CSV utils + dedicated tests.~~ ✅ Done
 3. **PR 3:** Add schema validation for storage/import.
 4. **PR 4:** Extract shared `TurbineEditorPanel` UI.
 5. **PR 5:** Split `App` feature modules.
@@ -145,5 +145,5 @@ _Date: 2026-04-09_
 - [ ] Add README with setup/test/build/contribution guidance.
 - [ ] Add lint/format scripts and enforce in CI.
 - [x] Remove unused `Card`/`Button` and jokes data if unused.
-- [ ] Extract CSV functions from `App.js`.
+- [x] Extract CSV functions from `App.js`.
 - [ ] Create shared turbine editor component for desktop/mobile reuse.
