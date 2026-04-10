@@ -39,6 +39,12 @@ const QUOTED_CSV = [
   '37.759228,128.713727,"21455","V80-2.0MW"',
 ].join('\n');
 
+const MULTILINE_QUOTED_NAME_CSV = [
+  'Latitude,Longitude,Name,Description',
+  '37.759228,128.713727,"Alpha, Beta',
+  'Gamma",V80-2.0MW',
+].join('\n');
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('Importing a layout from CSV', () => {
@@ -149,6 +155,19 @@ describe('Importing a layout from CSV', () => {
       expect(turbines[0].custom).toBeNull();
     });
 
+
+    it('supports quoted names that span multiple lines', () => {
+      const farm = createWindFarm();
+
+      farm.openImportModal();
+      farm.pasteImportCsv(MULTILINE_QUOTED_NAME_CSV);
+      farm.submitImport();
+      farm.confirmImport();
+
+      const { turbines } = farm.storedLayout();
+      expect(turbines[0].name).toBe('Alpha, Beta\nGamma');
+    });
+
     it('works when importing into an empty layout', () => {
       const farm = createWindFarm();
 
@@ -187,6 +206,23 @@ describe('Importing a layout from CSV', () => {
 
       expect(farm.isImportConfirmVisible()).toBe(false);
       expect(farm.importErrorText()).toBeTruthy();
+    });
+
+
+    it('shows a parse error for unterminated quoted fields', () => {
+      const farm = createWindFarm({
+        storage: { turbines: [EXISTING_TURBINE], fleet: FLEET, mapView: MAP_VIEW },
+      });
+
+      farm.openImportModal();
+      farm.pasteImportCsv([
+        'Latitude,Longitude,Name,Description',
+        '55.1,7.9,"Alpha,V80-2.0MW',
+      ].join('\n'));
+      farm.submitImport();
+
+      expect(farm.isImportConfirmVisible()).toBe(false);
+      expect(farm.importErrorText()).toContain('unterminated quoted field');
     });
 
     it('preserves the existing layout when CSV is invalid', () => {
