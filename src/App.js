@@ -10,81 +10,11 @@ import {
 } from '@floating-ui/react';
 import WindMap from './WindMap';
 import { useLayoutStorage } from './hooks/useLayoutStorage';
+import { buildLayoutCsv, parseLayoutCsv } from './utils/layoutCsv';
 import './App.css';
 
 function getSpec(turbine, fleet) {
   return turbine.custom ?? fleet;
-}
-
-function escapeCsvCell(value) {
-  const text = String(value ?? '');
-  if (!/[",\n]/.test(text)) return text;
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
-function buildLayoutCsv(turbines, fleet) {
-  const header = ['Latitude', 'Longitude', 'Name', 'Description'];
-  const rows = turbines.map((turbine, index) => {
-    const spec = getSpec(turbine, fleet);
-    const description = `${spec.rotorDiameter} ${spec.ratedPower * 1000} ${spec.hubHeight}`;
-    return [
-      turbine.lat,
-      turbine.lng,
-      turbine.name || `Turbine ${index + 1}`,
-      description,
-    ];
-  });
-
-  return [header, ...rows]
-    .map(row => row.map(escapeCsvCell).join(','))
-    .join('\n');
-}
-
-function parseCsvRow(line) {
-  const cells = [];
-  let pos = 0;
-  while (pos < line.length) {
-    if (line[pos] === '"') {
-      pos++;
-      let cell = '';
-      while (pos < line.length) {
-        if (line[pos] === '"') {
-          if (line[pos + 1] === '"') { cell += '"'; pos += 2; }
-          else { pos++; break; }
-        } else {
-          cell += line[pos++];
-        }
-      }
-      cells.push(cell);
-      if (line[pos] === ',') pos++;
-    } else {
-      const comma = line.indexOf(',', pos);
-      if (comma === -1) { cells.push(line.slice(pos)); break; }
-      cells.push(line.slice(pos, comma));
-      pos = comma + 1;
-    }
-  }
-  if (line.endsWith(',')) cells.push('');
-  return cells;
-}
-
-function parseLayoutCsv(text) {
-  const lines = text.trim().split('\n').map(l => l.trimEnd()).filter(Boolean);
-  if (lines.length < 2) throw new Error('CSV needs a header row and at least one turbine');
-  return lines.slice(1).map((line, i) => {
-    const cells = parseCsvRow(line);
-    const lat = parseFloat(cells[0]);
-    const lng = parseFloat(cells[1]);
-    if (!isFinite(lat) || !isFinite(lng)) throw new Error(`Row ${i + 2}: invalid coordinates`);
-    const name = cells[2] ?? '';
-    const description = cells[3] ?? '';
-    const parts = description.split(' ').map(Number);
-    const custom =
-      parts.length === 3 && parts.every(v => isFinite(v) && v > 0)
-        ? { rotorDiameter: parts[0], ratedPower: parts[1] / 1000, hubHeight: parts[2] }
-        : null;
-    return { lat, lng, name, custom };
-  });
 }
 
 // Returns true when the viewport is wide enough for the desktop layout (≥640 px).
