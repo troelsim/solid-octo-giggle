@@ -39,11 +39,11 @@ _Date: 2026-04-09_
 - `Popover` and `SpecField` were also extracted to their own files under `src/components/` so both `App.js` and the new panel can reuse them without circular imports.
 - Covered by existing feature tests (`turbine-specs`, `delete-turbine`, `turbine-management`, `desktop-layout`) plus the Playwright screenshot suite, which renders the shared panel in both mobile and desktop contexts.
 
-### 3) Introduce schema validation for persisted/imported layout data
-- **Why this matters:** Storage load and CSV import rely on permissive parsing and implicit assumptions.
-- **Risk today:** Corrupt localStorage or malformed CSV may lead to inconsistent app state.
-- **Effort:** Medium.
-- **First step:** Add a runtime schema validator (e.g., Zod) for turbine/fleet/mapView models; validate both `loadSaved()` and parsed CSV rows before state writes.
+### 3) ~~Introduce schema validation for persisted/imported layout data~~ ✅ Done
+- **Completed:** `src/domain/schemas.js` added with Zod schemas for `TurbineSchema`, `FleetSpecSchema`, `MapViewSchema`, and `StoredLayoutSchema`.
+- `useLayoutStorage.loadSaved()` now runs `StoredLayoutSchema.safeParse()` after `JSON.parse`; any failure (corrupt JSON, wrong types, missing/negative fields) returns `null` so callers fall back to empty defaults cleanly.
+- `createWindFarm()` in the test driver gained a `rawStorage` option for seeding arbitrary raw strings in tests.
+- 14 feature tests added in `src/__tests__/features/schema-validation.test.js` covering unparseable JSON, wrong field types, missing/negative spec values, invalid mapView shape, and valid round-trip loading.
 
 ### 4) ~~Move CSV parsing/serialization into dedicated, tested utilities~~ ✅ Done
 - **Completed:** `src/utils/layoutCsv.js` extracted with `buildLayoutCsv`, `parseCsvRecords`, and `parseLayoutCsv`.
@@ -133,7 +133,7 @@ _Date: 2026-04-09_
 
 1. **PR 1:** README + package metadata alignment + remove dead files.
 2. ~~**PR 2:** Extract CSV utils + dedicated tests.~~ ✅ Done
-3. **PR 3:** Add schema validation for storage/import.
+3. ~~**PR 3:** Add schema validation for storage/import.~~ ✅ Done
 4. ~~**PR 4:** Extract shared `TurbineEditorPanel` UI.~~ ✅ Done
 5. **PR 5:** Split `App` feature modules.
 6. **PR 6:** Map sync performance pass + profiling notes.
