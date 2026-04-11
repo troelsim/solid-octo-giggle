@@ -164,6 +164,8 @@ test('13 import layout — confirmation popover', async ({ page }) => {
   await page.getByRole('button', { name: 'Import layout' }).click();
   await expect(page.getByRole('button', { name: 'Replace layout' })).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/13-import-confirm.png` });
+});
+
 // ── Desktop layout (1280 × 800, no touch) ────────────────────────────────────
 
 test.describe('desktop layout', () => {

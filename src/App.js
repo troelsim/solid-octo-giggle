@@ -11,6 +11,9 @@ import {
 import WindMap from './WindMap';
 import { useLayoutStorage } from './hooks/useLayoutStorage';
 import { buildLayoutCsv, parseLayoutCsv } from './utils/layoutCsv';
+import Popover from './components/Popover';
+import SpecField from './components/SpecField';
+import TurbineEditorPanel from './components/TurbineEditorPanel';
 import './App.css';
 
 // Returns true when the viewport is wide enough for the desktop layout (≥640 px).
@@ -28,34 +31,6 @@ function useIsDesktop() {
     return () => mq.removeEventListener('change', handler);
   }, []);
   return isDesktop;
-}
-
-// Generic popover — renders via a portal, auto-flips when near the viewport edge.
-// anchorRef: ref to the DOM element the popover should be anchored to.
-function Popover({ anchorRef, open, onClose, children, className }) {
-  const { refs, floatingStyles, context } = useFloating({
-    open,
-    onOpenChange: (v) => { if (!v) onClose(); },
-    placement: 'bottom-end',
-    middleware: [offset(8), flip({ padding: 8 })],
-  });
-
-  const dismiss = useDismiss(context);
-  const { getFloatingProps } = useInteractions([dismiss]);
-
-  useLayoutEffect(() => {
-    refs.setReference(anchorRef.current);
-  });
-
-  if (!open) return null;
-
-  return (
-    <FloatingPortal>
-      <div ref={refs.setFloating} style={floatingStyles} className={className ? `popover ${className}` : 'popover'} {...getFloatingProps()}>
-        {children}
-      </div>
-    </FloatingPortal>
-  );
 }
 
 // Desktop-only turbine popover: anchored to a screen-space {x, y} point
@@ -94,27 +69,6 @@ function TurbinePopover({ anchor, open, onClose, children }) {
   );
 }
 
-function SpecField({ label, unit, value, onChange }) {
-  return (
-    <div className="spec-field">
-      <span className="spec-label">{label}</span>
-      <div className="spec-input-wrap">
-        <input
-          className="spec-input"
-          type="number"
-          inputMode="decimal"
-          value={value}
-          onChange={e => {
-            const v = parseFloat(e.target.value);
-            if (!isNaN(v) && v > 0) onChange(v);
-          }}
-        />
-        <span className="spec-unit">{unit}</span>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const isDesktop = useIsDesktop();
   const { turbines, setTurbines, fleet, setFleet, mapView, setMapView } = useLayoutStorage();
@@ -124,7 +78,6 @@ export default function App() {
   const [showRingPopover, setShowRingPopover] = useState(false);
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
   const [showClearPopover, setShowClearPopover] = useState(false);
-  const [showDeletePopover, setShowDeletePopover] = useState(false);
   const [showSettingsPopover, setShowSettingsPopover] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportCsv, setExportCsv] = useState('');
@@ -136,7 +89,6 @@ export default function App() {
   const [selectedTurbineAnchor, setSelectedTurbineAnchor] = useState(null);
   const ringWrapRef = useRef(null);
   const clearWrapRef = useRef(null);
-  const deleteWrapRef = useRef(null);
   const settingsWrapRef = useRef(null);
   const exportRef = useRef(null);
   const importConfirmRef = useRef(null);
@@ -179,7 +131,6 @@ export default function App() {
   const handleTurbineClick = useCallback((id, pos) => {
     setSelectedId(id);
     setMode('view');
-    setShowDeletePopover(false);
     if (pos) setSelectedTurbineAnchor(pos);
   }, []);
 
@@ -202,7 +153,6 @@ export default function App() {
     setTurbines(ts => ts.filter(t => t.id !== selectedId));
     setSelectedId(null);
     setMode('view');
-    setShowDeletePopover(false);
   };
 
   const clearLayout = () => {
@@ -408,6 +358,11 @@ export default function App() {
         />
       </div>
 
+      {/* The selected-turbine editor is the same component in both layouts —
+          only its wrapper (floating popover vs. fixed bottom panel) differs.
+          Keying by id resets any locally-held state (e.g. delete popover)
+          whenever the user selects a different turbine. */}
+
       {/* ── Desktop: turbine popover near the marker ── */}
       {/* Hidden in move mode so the user can click the map freely to confirm. */}
       {isDesktop && selected && mode !== 'move' && (
@@ -416,97 +371,45 @@ export default function App() {
           open={true}
           onClose={() => setSelectedId(null)}
         >
-          <div className="panel-row panel-header">
-            <div className="panel-title">
-              <input
-                className="panel-title-input"
-                value={selected.name}
-                placeholder={`Turbine ${selectedIndex}`}
-                onChange={e => renameTurbine(e.target.value)}
-                aria-label="Turbine name"
-              />
-              {isCustom && <span className="badge">custom</span>}
-            </div>
-            <div className="header-btns">
-              <button className="btn-sm" onClick={() => setMode('move')}>Move</button>
-              <div ref={deleteWrapRef} className="delete-wrap">
-                <button className="btn-sm btn-sm-danger" onClick={() => setShowDeletePopover(true)}>Delete</button>
-                <Popover anchorRef={deleteWrapRef} open={showDeletePopover} onClose={() => setShowDeletePopover(false)}>
-                  <p className="popover-title">Delete {displayName}?</p>
-                  <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={deleteTurbine}>
-                    Delete
-                  </button>
-                </Popover>
-              </div>
-              <button className="btn-icon btn-close" onClick={() => setSelectedId(null)} aria-label="Deselect">×</button>
-            </div>
-          </div>
-          <div className="spec-row">
-            <SpecField label="Hub height" unit="m"  value={selectedSpec.hubHeight}     onChange={v => updateSelectedSpec('hubHeight', v)} />
-            <SpecField label="Rotor dia." unit="m"  value={selectedSpec.rotorDiameter} onChange={v => updateSelectedSpec('rotorDiameter', v)} />
-            <SpecField label="Power"      unit="MW" value={selectedSpec.ratedPower}    onChange={v => updateSelectedSpec('ratedPower', v)} />
-          </div>
-          {isCustom && (
-            <div className="panel-secondary">
-              <button className="btn-text-action" onClick={resetToFleet}>Reset to fleet</button>
-              <button className="btn-text-action" onClick={applyToAll}>Set as fleet defaults</button>
-            </div>
-          )}
-          {!isCustom && turbines.length > 1 && (
-            <div className="panel-secondary">
-              <button className="btn-text-action" onClick={applyToAll}>Apply to all turbines</button>
-            </div>
-          )}
+          <TurbineEditorPanel
+            key={selected.id}
+            selected={selected}
+            selectedIndex={selectedIndex}
+            selectedSpec={selectedSpec}
+            isCustom={isCustom}
+            displayName={displayName}
+            turbineCount={turbines.length}
+            onRename={renameTurbine}
+            onStartMove={() => setMode('move')}
+            onDeselect={() => setSelectedId(null)}
+            onUpdateSpec={updateSelectedSpec}
+            onResetToFleet={resetToFleet}
+            onApplyToAll={applyToAll}
+            onDelete={deleteTurbine}
+          />
         </TurbinePopover>
       )}
 
-      {/* ── Mobile: bottom panel (full current behaviour) ── */}
+      {/* ── Mobile: bottom panel ── */}
       {!isDesktop && (
         <div className="bottom-panel">
           {selected ? (
-            <>
-              <div className="panel-row panel-header">
-                <div className="panel-title">
-                  <input
-                    className="panel-title-input"
-                    value={selected.name}
-                    placeholder={`Turbine ${selectedIndex}`}
-                    onChange={e => renameTurbine(e.target.value)}
-                    aria-label="Turbine name"
-                  />
-                  {isCustom && <span className="badge">custom</span>}
-                </div>
-                <div className="header-btns">
-                  <button className="btn-sm" onClick={() => setMode('move')}>Move</button>
-                  <div ref={deleteWrapRef} className="delete-wrap">
-                    <button className="btn-sm btn-sm-danger" onClick={() => setShowDeletePopover(true)}>Delete</button>
-                    <Popover anchorRef={deleteWrapRef} open={showDeletePopover} onClose={() => setShowDeletePopover(false)}>
-                      <p className="popover-title">Delete {displayName}?</p>
-                      <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={deleteTurbine}>
-                        Delete
-                      </button>
-                    </Popover>
-                  </div>
-                  <button className="btn-icon btn-close" onClick={() => setSelectedId(null)} aria-label="Deselect">×</button>
-                </div>
-              </div>
-              <div className="spec-row">
-                <SpecField label="Hub height" unit="m"  value={selectedSpec.hubHeight}     onChange={v => updateSelectedSpec('hubHeight', v)} />
-                <SpecField label="Rotor dia." unit="m"  value={selectedSpec.rotorDiameter} onChange={v => updateSelectedSpec('rotorDiameter', v)} />
-                <SpecField label="Power"      unit="MW" value={selectedSpec.ratedPower}    onChange={v => updateSelectedSpec('ratedPower', v)} />
-              </div>
-              {isCustom && (
-                <div className="panel-secondary">
-                  <button className="btn-text-action" onClick={resetToFleet}>Reset to fleet</button>
-                  <button className="btn-text-action" onClick={applyToAll}>Set as fleet defaults</button>
-                </div>
-              )}
-              {!isCustom && turbines.length > 1 && (
-                <div className="panel-secondary">
-                  <button className="btn-text-action" onClick={applyToAll}>Apply to all turbines</button>
-                </div>
-              )}
-            </>
+            <TurbineEditorPanel
+              key={selected.id}
+              selected={selected}
+              selectedIndex={selectedIndex}
+              selectedSpec={selectedSpec}
+              isCustom={isCustom}
+              displayName={displayName}
+              turbineCount={turbines.length}
+              onRename={renameTurbine}
+              onStartMove={() => setMode('move')}
+              onDeselect={() => setSelectedId(null)}
+              onUpdateSpec={updateSelectedSpec}
+              onResetToFleet={resetToFleet}
+              onApplyToAll={applyToAll}
+              onDelete={deleteTurbine}
+            />
           ) : (
             <>
               <div className="panel-row panel-header">
