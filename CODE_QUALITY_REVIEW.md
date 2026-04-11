@@ -33,11 +33,11 @@ _Date: 2026-04-09_
 - **Effort:** High.
 - **First step:** Create `features/layout-io`, `features/turbine-editor`, and `features/fleet-settings` folders; move pure helpers (`parseLayoutCsv`, `buildLayoutCsv`) out first, then UI sections.
 
-### 2) Deduplicate desktop/mobile selected-turbine panel markup
-- **Why this matters:** Desktop and mobile render paths repeat the same controls (`Move`, `Delete`, name input, spec fields, custom actions).
-- **Risk today:** Bug fixes must be done twice, and UI drift is likely.
-- **Effort:** Medium.
-- **First step:** Extract a `TurbineEditorPanel` presentational component with props for context-specific wrappers (desktop popover vs mobile panel).
+### 2) ~~Deduplicate desktop/mobile selected-turbine panel markup~~ ✅ Done
+- **Completed:** `src/components/TurbineEditorPanel.js` now owns the selected-turbine editor markup (title input, Move/Delete buttons, delete confirmation popover, spec fields, secondary actions) and is rendered from both the desktop `TurbinePopover` and the mobile `.bottom-panel`.
+- The panel owns its own delete-popover state locally; `key={selected.id}` in the parent resets it naturally when switching turbines, so `App.js` no longer needs `showDeletePopover` state, `deleteWrapRef`, or the manual reset calls in `handleTurbineClick`/`deleteTurbine`.
+- `Popover` and `SpecField` were also extracted to their own files under `src/components/` so both `App.js` and the new panel can reuse them without circular imports.
+- Covered by existing feature tests (`turbine-specs`, `delete-turbine`, `turbine-management`, `desktop-layout`) plus the Playwright screenshot suite, which renders the shared panel in both mobile and desktop contexts.
 
 ### 3) Introduce schema validation for persisted/imported layout data
 - **Why this matters:** Storage load and CSV import rely on permissive parsing and implicit assumptions.
@@ -134,7 +134,7 @@ _Date: 2026-04-09_
 1. **PR 1:** README + package metadata alignment + remove dead files.
 2. ~~**PR 2:** Extract CSV utils + dedicated tests.~~ ✅ Done
 3. **PR 3:** Add schema validation for storage/import.
-4. **PR 4:** Extract shared `TurbineEditorPanel` UI.
+4. ~~**PR 4:** Extract shared `TurbineEditorPanel` UI.~~ ✅ Done
 5. **PR 5:** Split `App` feature modules.
 6. **PR 6:** Map sync performance pass + profiling notes.
 
@@ -146,4 +146,4 @@ _Date: 2026-04-09_
 - [ ] Add lint/format scripts and enforce in CI.
 - [x] Remove unused `Card`/`Button` and jokes data if unused.
 - [x] Extract CSV functions from `App.js`.
-- [ ] Create shared turbine editor component for desktop/mobile reuse.
+- [x] Create shared turbine editor component for desktop/mobile reuse.
