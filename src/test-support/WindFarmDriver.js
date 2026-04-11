@@ -46,14 +46,17 @@ export function readStorage() {
 // Factory — returns the driver object bound to a freshly-rendered App
 //
 // Options:
-//   storage — pre-seeded layout ({ turbines, fleet }) to load from storage.
-//             If omitted the storage key is cleared so each test starts clean.
+//   storage    — pre-seeded layout ({ turbines, fleet }) to load from storage.
+//                If omitted the storage key is cleared so each test starts clean.
+//   rawStorage — raw string written directly to the storage key, bypassing
+//                JSON.stringify. Use to test corrupt or schema-invalid data.
 // ---------------------------------------------------------------------------
-export function createWindFarm({ storage } = {}) {
+export function createWindFarm({ storage, rawStorage } = {}) {
   // Always start from a known-clean storage state so tests don't bleed into
   // each other.  Callers that need pre-loaded data pass it via `storage`.
   clearStorage();
   if (storage) seedStorage(storage);
+  else if (rawStorage !== undefined) localStorage.setItem(STORAGE_KEY, rawStorage);
 
   render(<App />);
 

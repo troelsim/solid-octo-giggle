@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { StoredLayoutSchema } from '../domain/schemas';
 
 export const STORAGE_KEY = 'wind-farm-layout';
 export const FLEET_DEFAULTS = { hubHeight: 120, rotorDiameter: 150, ratedPower: 5.0 };
@@ -7,7 +8,9 @@ export const MAP_VIEW_DEFAULT = { center: [55.5, 7.9], zoom: 10 };
 function loadSaved() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const result = StoredLayoutSchema.safeParse(JSON.parse(raw));
+    return result.success ? result.data : null;
   } catch {
     return null;
   }
