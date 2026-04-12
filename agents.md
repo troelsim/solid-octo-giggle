@@ -30,17 +30,24 @@ Use a `ref` object (`ringsRef`, `markersRef`, etc.) keyed by turbine `id` to tra
 
 ## Keeping docs and roadmap files current
 
-`CODE_QUALITY_REVIEW.md` is a live backlog, not a snapshot. Every PR that
-completes an item must update that file before the branch is pushed:
+`CODE_QUALITY_REVIEW.md` and `TEST_IMPROVEMENT_PLAN.md` are live backlogs,
+not snapshots. Every PR that completes an item in either file must update that
+file before the branch is pushed:
 
 - Strike through the heading with `~~…~~` and append `✅ Done`.
 - Replace the _Why/Risk/First step_ bullets with a short _Completed_ summary
   describing what was built and where to find it.
-- Mark the matching entry in the **Suggested implementation order** list the
-  same way.
+- Mark the matching entry in the **Suggested implementation order** and
+  **Quick wins checklist** lists the same way.
 
 If a PR introduces a new quality issue or follow-up work, add it to the
-backlog at the appropriate priority tier at the same time.
+relevant backlog at the appropriate priority tier at the same time.
+
+`TEST_IMPROVEMENT_PLAN.md` specifically tracks the test infrastructure
+roadmap (flakiness, visual regression baselines, accessibility coverage, CI
+integration). Any PR that changes `e2e/screenshots.spec.js`,
+`playwright.config.js`, or the unit-test driver layer must check whether it
+closes or opens an item in that plan.
 
 ## Button visibility on dark backgrounds
 
