@@ -4,7 +4,20 @@ const path = require('path');
 
 const SCREENSHOTS = path.join(__dirname, '..', 'screenshots');
 
+// Captures unexpected application-level console errors.
+// Reset in beforeEach; asserted in afterEach.
+// Tile 407s and other "Failed to load resource:" network noise are filtered out.
+let appErrors = [];
+
 test.beforeEach(async ({ page }) => {
+  appErrors = [];
+  page.on('console', msg => {
+    // "Failed to load resource:" covers tile 407s, favicon 404s, and other
+    // network noise that are expected in the local dev environment.
+    if (msg.type() === 'error' && !msg.text().startsWith('Failed to load resource:'))
+      appErrors.push(msg.text());
+  });
+
   await page.goto('/');
   // Clear persisted layout so each scenario starts from a clean slate.
   await page.evaluate(() => localStorage.clear());
@@ -12,7 +25,12 @@ test.beforeEach(async ({ page }) => {
   // Wait for the map and header to be ready (bottom-panel absent on desktop)
   await page.waitForSelector('.wind-map');
   await page.waitForSelector('.app-header');
-  await page.waitForTimeout(400);
+  // Add turbine button is always present in the header on both layouts.
+  await expect(page.getByRole('button', { name: 'Add turbine' })).toBeVisible();
+});
+
+test.afterEach(async () => {
+  expect(appErrors, 'unexpected console errors').toHaveLength(0);
 });
 
 test('01 empty farm — fleet defaults panel', async ({ page }) => {
@@ -31,21 +49,21 @@ test('02 add mode — placement banner', async ({ page }) => {
 test('03 turbine placed — spec panel', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(400);
+  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/03-turbine-placed.png` });
 });
 
 test('04 custom specs — badge visible', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(400);
+  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
 
   // Edit hub height if a turbine is selected
   const hubInput = page.locator('.spec-input').first();
   await hubInput.click({ clickCount: 3 });
   await hubInput.type('130');
   await hubInput.press('Tab');
-  await page.waitForTimeout(200);
+  await expect(page.getByText('custom')).toBeVisible();
 
   await page.screenshot({ path: `${SCREENSHOTS}/04-custom-specs.png` });
 });
@@ -55,7 +73,7 @@ test('05 fleet view — turbine count', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
     await page.locator('.wind-map').click(pos);
-    await page.waitForTimeout(200);
+    await expect(page.getByRole('button', { name: 'Deselect' })).toBeVisible();
   }
   // Deselect to show fleet panel
   await page.getByRole('button', { name: 'Deselect' }).click();
@@ -66,7 +84,7 @@ test('05 fleet view — turbine count', async ({ page }) => {
 test('07 delete turbine — confirmation popover', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(400);
+  await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText(/delete turbine \d+\?/i)).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/07-delete-turbine-popover.png` });
@@ -77,7 +95,7 @@ test('08 clear layout — confirmation popover', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
     await page.locator('.wind-map').click(pos);
-    await page.waitForTimeout(200);
+    await expect(page.getByRole('button', { name: 'Deselect' })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Deselect' }).click();
   // Open the confirmation popover
@@ -99,7 +117,6 @@ test('09 persisted layout — survives reload', async ({ page }) => {
   await page.reload();
   await page.waitForSelector('.wind-map');
   await page.waitForSelector('.app-header');
-  await page.waitForTimeout(400);
 
   // Verify the fleet panel shows a turbine count (any number > 0).
   await expect(page.getByText(/\d+ turbines?/)).toBeVisible();
@@ -110,7 +127,7 @@ test('10 export layout — csv text field', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
     await page.locator('.wind-map').click(pos);
-    await page.waitForTimeout(200);
+    await expect(page.getByRole('button', { name: 'Deselect' })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Deselect' }).click();
   await page.getByRole('button', { name: 'Export CSV' }).click();
@@ -120,19 +137,28 @@ test('10 export layout — csv text field', async ({ page }) => {
 
 test('18 batch add — multiple turbines placed without leaving add mode', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
-  for (const pos of [{ x: 120, y: 200 }, { x: 195, y: 300 }, { x: 270, y: 200 }]) {
-    await page.locator('.wind-map').click(pos);
-    await page.waitForTimeout(150);
-  }
-  // Mode banner should still be visible (still in add mode after 3 placements).
   await expect(page.getByText(/tap or drag to place/i)).toBeVisible();
+
+  // Use page.mouse.click() rather than locator.click() here.
+  // On a hasTouch device, locator.click() fires touch events AND a synthetic
+  // mouse click.  Leaflet's tap module fires its own synthetic click on touchend,
+  // placing the turbine; Playwright's subsequent click can land on the freshly-
+  // placed marker and call handleTurbineClick, reverting mode to 'view'.
+  // page.mouse.click() dispatches only mouse events, so exactly one click
+  // reaches handleMapClick and the mode stays 'add' after each placement.
+  const mapBox = await page.locator('.wind-map').boundingBox();
+  for (const pos of [{ x: 120, y: 200 }, { x: 195, y: 300 }, { x: 270, y: 200 }]) {
+    await page.mouse.click(mapBox.x + pos.x, mapBox.y + pos.y);
+    // Banner must remain visible — confirms sticky add mode kept us in 'add' state.
+    await expect(page.getByText(/tap or drag to place/i)).toBeVisible();
+  }
   await page.screenshot({ path: `${SCREENSHOTS}/18-batch-add.png` });
 });
 
 test('06 move mode — move banner', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(400);
+  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
   // Click Move if a turbine is selected, otherwise just screenshot current state
   const moveBtn = page.getByRole('button', { name: 'Move' });
   if (await moveBtn.isVisible()) {
@@ -145,7 +171,8 @@ test('11 add mode — cursor preview ghost at hover position', async ({ page }) 
   await page.getByRole('button', { name: 'Add turbine' }).click();
   // Hover over the map so the ghost turbine + ring appear at that position.
   await page.locator('.wind-map').hover({ position: { x: 195, y: 300 } });
-  await page.waitForTimeout(300);
+  // Wait for the ghost marker to be added to the Leaflet marker pane.
+  await page.waitForSelector('.leaflet-marker-pane .leaflet-marker-icon');
   await page.screenshot({ path: `${SCREENSHOTS}/11-add-preview.png` });
 });
 
@@ -153,12 +180,15 @@ test('12 move mode — cursor preview ghost while original fades', async ({ page
   // Place a turbine near centre.
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(400);
+  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
   // Enter move mode.
   await page.getByRole('button', { name: 'Move' }).click();
   // Hover at a different position to show the ghost while the original is faded.
   await page.locator('.wind-map').hover({ position: { x: 280, y: 200 } });
-  await page.waitForTimeout(300);
+  // Wait for the ghost (2nd marker: original + ghost) to appear in the marker pane.
+  await page.waitForFunction(
+    () => document.querySelectorAll('.leaflet-marker-pane .leaflet-marker-icon').length >= 2
+  );
   await page.screenshot({ path: `${SCREENSHOTS}/12-move-preview.png` });
 });
 
@@ -166,7 +196,7 @@ test('13 import layout — confirmation popover', async ({ page }) => {
   // Place a turbine so there is something to overwrite.
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(200);
+  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
   // Open the import modal.
   await page.getByRole('button', { name: 'Import CSV' }).click();
   // Paste a CSV.
@@ -182,10 +212,9 @@ test('16 mobile move mode — panel hidden, drag banner visible', async ({ page 
   // Place a turbine.
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(400);
+  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
   // Enter move mode.
   await page.getByRole('button', { name: 'Move' }).click();
-  await page.waitForTimeout(200);
   // The bottom panel should be hidden and the drag-move banner should appear.
   await expect(page.getByText(/drag or tap to move/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /^move$/i })).not.toBeVisible();
@@ -196,10 +225,10 @@ test('17 mobile move mode — drag places turbine at new position', async ({ pag
   // Place a turbine near centre.
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await page.waitForTimeout(400);
+  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
   // Enter move mode.
   await page.getByRole('button', { name: 'Move' }).click();
-  await page.waitForTimeout(200);
+  await expect(page.getByText(/drag or tap to move/i)).toBeVisible();
   // Simulate a touch drag across the map (start far enough from the turbine so
   // the drag exceeds the 15 px tap-tolerance and triggers the ghost preview).
   const mapEl = page.locator('.wind-map');
@@ -211,15 +240,17 @@ test('17 mobile move mode — drag places turbine at new position', async ({ pag
     touches: [{ clientX: 280, clientY: 200, identifier: 0 }],
     changedTouches: [{ clientX: 280, clientY: 200, identifier: 0 }],
   });
+  // Wait for the ghost marker to appear alongside the original (2 markers total).
+  await page.waitForFunction(
+    () => document.querySelectorAll('.leaflet-marker-pane .leaflet-marker-icon').length >= 2
+  );
   // Screenshot the ghost-preview mid-drag.
-  await page.waitForTimeout(100);
   await page.screenshot({ path: `${SCREENSHOTS}/17-mobile-move-drag-preview.png` });
   // Release to confirm placement.
   await mapEl.dispatchEvent('touchend', {
     touches: [],
     changedTouches: [{ clientX: 280, clientY: 200, identifier: 0 }],
   });
-  await page.waitForTimeout(300);
   // The turbine editor panel should be back (move confirmed, view mode restored).
   await expect(page.getByRole('button', { name: /^move$/i })).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/17-mobile-move-drag-placed.png` });
@@ -235,7 +266,7 @@ test.describe('desktop layout', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page.waitForSelector('.wind-map');
-    await page.waitForTimeout(400);
+    await expect(page.getByRole('button', { name: 'Fleet settings' })).toBeVisible();
     await page.getByRole('button', { name: 'Fleet settings' }).click();
     await expect(page.getByText('Fleet defaults')).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOTS}/13-desktop-settings-popover.png` });
@@ -246,12 +277,11 @@ test.describe('desktop layout', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page.waitForSelector('.wind-map');
-    await page.waitForTimeout(400);
+    await expect(page.getByRole('button', { name: 'Add turbine' })).toBeVisible();
     await page.getByRole('button', { name: 'Add turbine' }).click();
     await page.locator('.wind-map').click({ x: 640, y: 400 });
-    await page.waitForTimeout(400);
-    // Turbine popover should be visible with spec fields and action buttons
     await expect(page.getByRole('textbox', { name: 'Turbine name' })).toBeVisible();
+    // Turbine popover should be visible with spec fields and action buttons
     await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOTS}/14-desktop-turbine-popover.png` });
@@ -262,12 +292,12 @@ test.describe('desktop layout', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page.waitForSelector('.wind-map');
-    await page.waitForTimeout(400);
+    await expect(page.getByRole('button', { name: 'Add turbine' })).toBeVisible();
     await page.getByRole('button', { name: 'Add turbine' }).click();
     await page.locator('.wind-map').click({ x: 640, y: 400 });
-    await page.waitForTimeout(400);
+    await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
     await page.getByRole('button', { name: 'Move' }).click();
-    await page.waitForTimeout(200);
+    await expect(page.getByText(/click the map to move/i)).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOTS}/15-desktop-move-mode.png` });
   });
 });
