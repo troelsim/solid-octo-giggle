@@ -72,7 +72,7 @@ describe('Moving a turbine', () => {
 
       farm.startMovingSelectedTurbine();
 
-      expect(screen.getByText(/drag to move/i)).toBeInTheDocument();
+      expect(screen.getByText(/drag or tap to move/i)).toBeInTheDocument();
     });
 
     it('restores the editor panel after a move is confirmed', () => {

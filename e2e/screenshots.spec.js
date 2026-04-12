@@ -176,7 +176,7 @@ test('16 mobile move mode — panel hidden, drag banner visible', async ({ page 
   await page.getByRole('button', { name: 'Move' }).click();
   await page.waitForTimeout(200);
   // The bottom panel should be hidden and the drag-move banner should appear.
-  await expect(page.getByText(/drag to move/i)).toBeVisible();
+  await expect(page.getByText(/drag or tap to move/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /^move$/i })).not.toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/16-mobile-move-mode.png` });
 });
