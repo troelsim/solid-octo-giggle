@@ -116,7 +116,7 @@ export default function App() {
         setTurbines(ts => [...ts, { id, lat, lng, custom: null, name: '' }]);
         setSelectedId(id);
         if (pos) setSelectedTurbineAnchor(pos);
-        return 'view';
+        return 'add';
       }
       if (prev === 'move') {
         setTurbines(ts => ts.map(t => t.id === selectedId ? { ...t, lat, lng } : t));
@@ -132,6 +132,13 @@ export default function App() {
     setSelectedId(id);
     setMode('view');
     if (pos) setSelectedTurbineAnchor(pos);
+  }, []);
+
+  // Escape key exits add or move mode without discarding placed turbines.
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') setMode('view'); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 
   const updateSelectedSpec = (key, value) => {

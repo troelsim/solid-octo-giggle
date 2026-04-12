@@ -23,12 +23,12 @@ describe('Adding turbines', () => {
     expect(farm.selectedTurbineNumber()).toBe(1);
   });
 
-  it('returns to view mode after placing a turbine', () => {
+  it('stays in add mode after placing a turbine', () => {
     const farm = createWindFarm();
 
     farm.addTurbine();
 
-    expect(farm.currentMode()).toBe('view');
+    expect(farm.currentMode()).toBe('add');
   });
 
   it('numbers each additional turbine sequentially', () => {
@@ -96,6 +96,37 @@ describe('Deleting a turbine', () => {
     farm.confirmDeleteTurbine();
 
     expect(farm.turbineCount()).toBe(2);
+  });
+});
+
+describe('Batch adding turbines', () => {
+  it('can place multiple turbines without re-entering add mode', () => {
+    const farm = createWindFarm();
+
+    farm.addTurbine();
+    farm.addTurbine();
+    farm.addTurbine();
+
+    expect(farm.turbineCount()).toBe(3);
+    expect(farm.currentMode()).toBe('add');
+  });
+
+  it('pressing Escape exits add mode', () => {
+    const farm = createWindFarm();
+    farm.addTurbine();
+
+    farm.exitAddMode();
+
+    expect(farm.currentMode()).toBe('view');
+  });
+
+  it('Cancel button exits add mode', () => {
+    const farm = createWindFarm();
+    farm.addTurbine();
+
+    farm.cancelAction();
+
+    expect(farm.currentMode()).toBe('view');
   });
 });
 
