@@ -36,7 +36,38 @@ new driver methods, and any new `data-*` attributes on the mock.
 
 ## After making any UI change
 
-Run the screenshot suite and read every image before considering the task done:
+### 1. Live exploratory testing with the browser MCP
+
+The Playwright MCP is configured in `.mcp.json` and available as
+`mcp__playwright__*` tools. Use it for live interaction with the running app
+before committing. Start the dev server first:
+
+```bash
+BROWSER=none npm start &
+```
+
+Then drive the browser directly:
+
+```
+mcp__playwright__browser_resize   → set 393×852 (iPhone viewport)
+mcp__playwright__browser_navigate → http://localhost:3000
+mcp__playwright__browser_snapshot → read the accessibility tree
+mcp__playwright__browser_click    → interact with buttons, popovers, inputs
+mcp__playwright__browser_take_screenshot → capture what you see
+```
+
+**Walk every state touched by your change.** If you added a popover, open it.
+If you changed the bottom panel, scroll it. If you added a new mode, activate
+it. Read each screenshot you take and verify it looks correct at 393×852.
+Fix anything that looks wrong before moving on.
+
+This is the fastest feedback loop — it catches z-index problems, off-screen
+popovers, and clipped panels in seconds, before the slower screenshot suite
+runs.
+
+### 2. Screenshot suite
+
+Run the full Playwright screenshot suite and read every image:
 
 ```bash
 npm run screenshot
