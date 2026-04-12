@@ -36,11 +36,23 @@ new driver methods, and any new `data-*` attributes on the mock.
 
 ## After making any UI change
 
+### Assertion priority order
+
+Use this order for every e2e scenario. Do not skip straight to screenshots.
+
+1. **Semantic / ARIA assertions first** — `expect(el).toBeVisible()`,
+   `toHaveText()`, `toHaveAttribute()`. Fast, readable failure messages, not
+   sensitive to pixel jitter.
+2. **Snapshot for visual regression** — `expect(page).toHaveScreenshot()`
+   catches layout bugs that semantic assertions miss.
+3. **MCP for development-time eyeballing only** — not a substitute for the
+   above two.
+
 ### 1. Live exploratory testing with the browser MCP
 
 The Playwright MCP is configured in `.mcp.json` and available as
 `mcp__playwright__*` tools. Use it for live interaction with the running app
-before committing. Start the dev server first:
+**before** running the screenshot suite. Start the dev server first:
 
 ```bash
 BROWSER=none npm start &
@@ -62,43 +74,16 @@ it. Read each screenshot you take and verify it looks correct at 393×852.
 Fix anything that looks wrong before moving on.
 
 This is the fastest feedback loop — it catches z-index problems, off-screen
-popovers, and clipped panels in seconds, before the slower screenshot suite
-runs.
+popovers, and clipped panels in seconds. It is the **development inner loop**;
+the screenshot suite below is the **regression gate**.
 
 ### 2. Screenshot suite
 
-Run the full Playwright screenshot suite and read every image:
+Run the full Playwright screenshot suite:
 
 ```bash
 npm run screenshot
 ```
-
-Then read each file in `screenshots/`:
-
-```
-screenshots/01-empty-farm.png
-screenshots/02-add-mode.png
-screenshots/03-turbine-placed.png
-screenshots/04-custom-specs.png
-screenshots/05-fleet-view.png
-screenshots/06-move-mode.png
-screenshots/07-delete-turbine-popover.png
-screenshots/08-clear-layout-popover.png
-screenshots/09-persisted-layout.png
-screenshots/10-export-layout.png
-screenshots/11-add-preview.png
-screenshots/12-move-preview.png
-screenshots/13-import-confirm.png
-screenshots/13-desktop-settings-popover.png
-screenshots/14-desktop-turbine-popover.png
-screenshots/15-desktop-move-mode.png
-screenshots/16-mobile-move-mode.png
-screenshots/17-mobile-move-drag-preview.png
-screenshots/17-mobile-move-drag-placed.png
-```
-
-Use what you see to verify the change looks correct on a 393×852 iPhone viewport.
-If something looks wrong, fix it before finishing.
 
 **Unit tests cannot catch layout bugs.** JSDOM does not do real rendering, so
 a popover that opens off-screen, a panel that clips its children, or a z-index
@@ -107,8 +92,13 @@ issue will pass every unit test and only show up visually. This means:
 - Every new interactive UI state (open popover, active mode, panel variant, …)
   needs its own scenario in `e2e/screenshots.spec.js` that reaches that state
   and takes a screenshot.
-- Reading the screenshots is mandatory verification, not a formality. If the
-  new screenshot is not in the list above, add it to the list.
+- Use `expect(page).toHaveScreenshot('name.png')` — committed baselines in
+  `e2e/snapshots/` let the machine detect regressions automatically. Update
+  baselines deliberately with `--update-snapshots` when a visual change is
+  intentional.
+
+See `TEST_IMPROVEMENT_PLAN.md` for the roadmap to improve this layer further
+(flakiness, accessibility coverage, CI integration).
 
 ## Running the unit tests
 
