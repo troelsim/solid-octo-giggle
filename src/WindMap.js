@@ -16,6 +16,20 @@ const LAYERS = {
   },
 };
 
+// Build the three SVG blade lines for a turbine icon.
+// Tips are at 0°, 120°, 240° clockwise from north.
+function bladesSVG(c, bladeLen, color, strokeWidth) {
+  const tips = [
+    [c, c - bladeLen],
+    [c + bladeLen * 0.866, c + bladeLen * 0.5],
+    [c - bladeLen * 0.866, c + bladeLen * 0.5],
+  ];
+  return tips
+    .map(([tx, ty]) =>
+      `<line x1="${c}" y1="${c}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`)
+    .join('');
+}
+
 function makeTurbineIcon(label, selected, moveTarget) {
   const color = moveTarget
     ? 'var(--color-accent-amber, #e09020)'
@@ -32,19 +46,7 @@ function makeTurbineIcon(label, selected, moveTarget) {
   const c = size / 2;
   const hubR = selected ? 4 : 3;
   const bladeLen = Math.round(c * 0.72);
-
-  // Blade tips at 0°, 120°, 240° clockwise from north
-  const tips = [
-    [c, c - bladeLen],
-    [c + bladeLen * 0.866, c + bladeLen * 0.5],
-    [c - bladeLen * 0.866, c + bladeLen * 0.5],
-  ];
-  const blades = tips
-    .map(
-      ([tx, ty]) =>
-        `<line x1="${c}" y1="${c}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="${selected ? 2.5 : 2}" stroke-linecap="round"/>`
-    )
-    .join('');
+  const blades = bladesSVG(c, bladeLen, color, selected ? 2.5 : 2);
   const ring = selected
     ? `<circle cx="${c}" cy="${c}" r="${c - 1.5}" fill="none" stroke="${color}" stroke-width="1" opacity="0.35" ${moveTarget ? 'stroke-dasharray="3 2"' : ''}/>`
     : '';
@@ -72,18 +74,7 @@ function makeCursorPreviewIcon() {
   const color = 'var(--color-primary-light, #2aaa78)';
   const bgColor = 'rgba(8,28,20,0.62)';
   const hubR = 4;
-  const bladeLen = Math.round(c * 0.72);
-  const tips = [
-    [c, c - bladeLen],
-    [c + bladeLen * 0.866, c + bladeLen * 0.5],
-    [c - bladeLen * 0.866, c + bladeLen * 0.5],
-  ];
-  const blades = tips
-    .map(
-      ([tx, ty]) =>
-        `<line x1="${c}" y1="${c}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>`
-    )
-    .join('');
+  const blades = bladesSVG(c, Math.round(c * 0.72), color, 2.5);
   return L.divIcon({
     className: '',
     html: `<div style="opacity:0.65;width:${size}px;height:${size}px">
@@ -251,10 +242,8 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     };
 
     const onTouchMove = (e) => {
-      // Prevent browser scroll / iOS rubber-band overscroll while the user is
-      // placing a turbine.  Must be called before any early returns because the
-      // listener is registered as non-passive.  Multi-touch (pinch-to-zoom) is
-      // intentionally left unblocked so zoom remains available in add/move mode.
+      // Suppress browser scroll/overscroll in add/move mode (non-passive listener).
+      // Multi-touch left unblocked so pinch-to-zoom remains available.
       if (previewCfgRef.current && e.touches.length === 1) e.preventDefault();
 
       if (!previewCfgRef.current || e.touches.length !== 1 || !touchStartPos) return;
@@ -278,7 +267,6 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       // by Leaflet's map 'click' event so we must not duplicate the call.
       if (!previewCfgRef.current || !touchDragging) return;
       touchDragging = false;
-      touchStartPos = null;
       hidePreview();
       const touch = e.changedTouches[0];
       const rect = mapContainer.getBoundingClientRect();
