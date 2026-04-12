@@ -23,7 +23,8 @@ test('01 empty farm — fleet defaults panel', async ({ page }) => {
 
 test('02 add mode — placement banner', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
-  await expect(page.getByText('Tap the map to place a turbine')).toBeVisible();
+  // Mobile viewport (default): banner says "Tap or drag to place a turbine"
+  await expect(page.getByText('Tap or drag to place a turbine')).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/02-add-mode.png` });
 });
 
@@ -164,6 +165,53 @@ test('13 import layout — confirmation popover', async ({ page }) => {
   await page.getByRole('button', { name: 'Import layout' }).click();
   await expect(page.getByRole('button', { name: 'Replace layout' })).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/13-import-confirm.png` });
+});
+
+test('16 mobile move mode — panel hidden, drag banner visible', async ({ page }) => {
+  // Place a turbine.
+  await page.getByRole('button', { name: 'Add turbine' }).click();
+  await page.locator('.wind-map').click({ x: 195, y: 300 });
+  await page.waitForTimeout(400);
+  // Enter move mode.
+  await page.getByRole('button', { name: 'Move' }).click();
+  await page.waitForTimeout(200);
+  // The bottom panel should be hidden and the drag-move banner should appear.
+  await expect(page.getByText(/drag to move/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /^move$/i })).not.toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOTS}/16-mobile-move-mode.png` });
+});
+
+test('17 mobile move mode — drag places turbine at new position', async ({ page }) => {
+  // Place a turbine near centre.
+  await page.getByRole('button', { name: 'Add turbine' }).click();
+  await page.locator('.wind-map').click({ x: 195, y: 300 });
+  await page.waitForTimeout(400);
+  // Enter move mode.
+  await page.getByRole('button', { name: 'Move' }).click();
+  await page.waitForTimeout(200);
+  // Simulate a touch drag across the map (start far enough from the turbine so
+  // the drag exceeds the 15 px tap-tolerance and triggers the ghost preview).
+  const mapEl = page.locator('.wind-map');
+  await mapEl.dispatchEvent('touchstart', {
+    touches: [{ clientX: 195, clientY: 300, identifier: 0 }],
+    changedTouches: [{ clientX: 195, clientY: 300, identifier: 0 }],
+  });
+  await mapEl.dispatchEvent('touchmove', {
+    touches: [{ clientX: 280, clientY: 200, identifier: 0 }],
+    changedTouches: [{ clientX: 280, clientY: 200, identifier: 0 }],
+  });
+  // Screenshot the ghost-preview mid-drag.
+  await page.waitForTimeout(100);
+  await page.screenshot({ path: `${SCREENSHOTS}/17-mobile-move-drag-preview.png` });
+  // Release to confirm placement.
+  await mapEl.dispatchEvent('touchend', {
+    touches: [],
+    changedTouches: [{ clientX: 280, clientY: 200, identifier: 0 }],
+  });
+  await page.waitForTimeout(300);
+  // The turbine editor panel should be back (move confirmed, view mode restored).
+  await expect(page.getByRole('button', { name: /^move$/i })).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOTS}/17-mobile-move-drag-placed.png` });
 });
 
 // ── Desktop layout (1280 × 800, no touch) ────────────────────────────────────

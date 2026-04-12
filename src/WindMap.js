@@ -16,6 +16,20 @@ const LAYERS = {
   },
 };
 
+// Build the three SVG blade lines for a turbine icon.
+// Tips are at 0°, 120°, 240° clockwise from north.
+function bladesSVG(c, bladeLen, color, strokeWidth) {
+  const tips = [
+    [c, c - bladeLen],
+    [c + bladeLen * 0.866, c + bladeLen * 0.5],
+    [c - bladeLen * 0.866, c + bladeLen * 0.5],
+  ];
+  return tips
+    .map(([tx, ty]) =>
+      `<line x1="${c}" y1="${c}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`)
+    .join('');
+}
+
 function makeTurbineIcon(label, selected, moveTarget) {
   const color = moveTarget
     ? 'var(--color-accent-amber, #e09020)'
@@ -32,19 +46,7 @@ function makeTurbineIcon(label, selected, moveTarget) {
   const c = size / 2;
   const hubR = selected ? 4 : 3;
   const bladeLen = Math.round(c * 0.72);
-
-  // Blade tips at 0°, 120°, 240° clockwise from north
-  const tips = [
-    [c, c - bladeLen],
-    [c + bladeLen * 0.866, c + bladeLen * 0.5],
-    [c - bladeLen * 0.866, c + bladeLen * 0.5],
-  ];
-  const blades = tips
-    .map(
-      ([tx, ty]) =>
-        `<line x1="${c}" y1="${c}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="${selected ? 2.5 : 2}" stroke-linecap="round"/>`
-    )
-    .join('');
+  const blades = bladesSVG(c, bladeLen, color, selected ? 2.5 : 2);
   const ring = selected
     ? `<circle cx="${c}" cy="${c}" r="${c - 1.5}" fill="none" stroke="${color}" stroke-width="1" opacity="0.35" ${moveTarget ? 'stroke-dasharray="3 2"' : ''}/>`
     : '';
@@ -64,7 +66,7 @@ function makeTurbineIcon(label, selected, moveTarget) {
   });
 }
 
-// Ghost icon shown at the cursor position during add/move mode.
+// Ghost icon shown at the cursor/touch position during add/move mode.
 // No label; always uses the selected-size and primary-light colour at reduced opacity.
 function makeCursorPreviewIcon() {
   const size = 44;
@@ -72,18 +74,7 @@ function makeCursorPreviewIcon() {
   const color = 'var(--color-primary-light, #2aaa78)';
   const bgColor = 'rgba(8,28,20,0.62)';
   const hubR = 4;
-  const bladeLen = Math.round(c * 0.72);
-  const tips = [
-    [c, c - bladeLen],
-    [c + bladeLen * 0.866, c + bladeLen * 0.5],
-    [c - bladeLen * 0.866, c + bladeLen * 0.5],
-  ];
-  const blades = tips
-    .map(
-      ([tx, ty]) =>
-        `<line x1="${c}" y1="${c}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>`
-    )
-    .join('');
+  const blades = bladesSVG(c, Math.round(c * 0.72), color, 2.5);
   return L.divIcon({
     className: '',
     html: `<div style="opacity:0.65;width:${size}px;height:${size}px">
@@ -121,6 +112,19 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       mode, turbines, selectedId, fleet, showSpacingRing, spacingRingDiameters,
     } : null;
   });
+
+  // In add/move mode, disable Leaflet map panning so that any touch gesture is
+  // unambiguously a placement gesture rather than a pan.  Pinch-to-zoom is
+  // controlled by a separate handler and remains available.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (mode === 'view') {
+      map.dragging.enable();
+    } else {
+      map.dragging.disable();
+    }
+  }, [mode]);
 
   // Init map once — guard prevents StrictMode double-initialisation
   useEffect(() => {
@@ -165,13 +169,10 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       onSelectedTurbineMove({ x: containerRect.left + pt.x, y: containerRect.top + pt.y });
     });
 
-    // Cursor preview: ghost turbine + spacing ring follow the mouse in add/move mode.
-    // Purely desktop (mousemove); mobile tap-to-place behaviour is unchanged.
-    map.on('mousemove', e => {
+    // Shared helper: move the ghost-turbine preview and its spacing ring to latlng.
+    function showPreview(latlng) {
       const cfg = previewCfgRef.current;
       if (!cfg) return;
-
-      const { latlng } = e;
 
       // Resolve the spec for ring radius (move → selected turbine's spec; add → fleet defaults).
       let spec = cfg.fleet;
@@ -192,7 +193,7 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
         }).addTo(map);
       }
 
-      // Update or create the preview ring (always shown during placement for precision).
+      // Update or create the preview ring.
       if (cursorRingRef.current) {
         cursorRingRef.current.setLatLng(latlng).setRadius(ringRadius);
         cursorRingRef.current.setStyle({ opacity: 1 });
@@ -206,13 +207,81 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
           interactive: false,
         }).addTo(map);
       }
+    }
+
+    // Shared helper: fade out the preview without removing it from the map.
+    function hidePreview() {
+      if (cursorMarkerRef.current) cursorMarkerRef.current.setOpacity(0);
+      if (cursorRingRef.current) cursorRingRef.current.setStyle({ opacity: 0 });
+    }
+
+    // Desktop: ghost turbine + spacing ring follow the mouse in add/move mode.
+    map.on('mousemove', e => {
+      if (!previewCfgRef.current) return;
+      showPreview(e.latlng);
     });
 
     // Hide preview when the cursor leaves the map area.
-    map.on('mouseout', () => {
-      if (cursorMarkerRef.current) cursorMarkerRef.current.setOpacity(0);
-      if (cursorRingRef.current) cursorRingRef.current.setStyle({ opacity: 0 });
-    });
+    map.on('mouseout', hidePreview);
+
+    // Mobile touch drag: show the ghost while the finger moves, then confirm
+    // placement on release.  Map dragging is disabled while in add/move mode
+    // (see the mode-sync useEffect above), so any touch gesture here is
+    // unambiguously a placement gesture.
+    //
+    // Movements below Leaflet's tap tolerance (15 px) are treated as taps and
+    // handled by the map 'click' event instead, preventing double-firing.
+    let touchStartPos = null;
+    let touchDragging = false;
+
+    const onTouchStart = (e) => {
+      touchDragging = false;
+      touchStartPos = e.touches.length === 1
+        ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+        : null; // multi-touch (pinch) — reset so drag state is clean afterwards
+    };
+
+    const onTouchMove = (e) => {
+      // Suppress browser scroll/overscroll in add/move mode (non-passive listener).
+      // Multi-touch left unblocked so pinch-to-zoom remains available.
+      if (previewCfgRef.current && e.touches.length === 1) e.preventDefault();
+
+      if (!previewCfgRef.current || e.touches.length !== 1 || !touchStartPos) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - touchStartPos.x;
+      const dy = touch.clientY - touchStartPos.y;
+      // Only engage drag-preview once the finger has moved beyond Leaflet's tap
+      // tolerance so that a plain tap still falls through to map 'click'.
+      if (!touchDragging && Math.sqrt(dx * dx + dy * dy) < 15) return;
+      touchDragging = true;
+      const rect = mapContainer.getBoundingClientRect();
+      const latlng = map.containerPointToLatLng([
+        touch.clientX - rect.left,
+        touch.clientY - rect.top,
+      ]);
+      showPreview(latlng);
+    };
+
+    const onTouchEnd = (e) => {
+      // Only handle touch-end if a drag was in progress; plain taps are handled
+      // by Leaflet's map 'click' event so we must not duplicate the call.
+      if (!previewCfgRef.current || !touchDragging) return;
+      touchDragging = false;
+      hidePreview();
+      const touch = e.changedTouches[0];
+      const rect = mapContainer.getBoundingClientRect();
+      const latlng = map.containerPointToLatLng([
+        touch.clientX - rect.left,
+        touch.clientY - rect.top,
+      ]);
+      cbRef.current.onMapClick(latlng.lat, latlng.lng, { x: touch.clientX, y: touch.clientY });
+    };
+
+    mapContainer.addEventListener('touchstart', onTouchStart, { passive: true });
+    // Non-passive so we can call preventDefault() to suppress browser scroll
+    // and iOS overscroll while the user is dragging to place a turbine.
+    mapContainer.addEventListener('touchmove', onTouchMove, { passive: false });
+    mapContainer.addEventListener('touchend', onTouchEnd, { passive: true });
 
     mapRef.current = map;
     return () => {
@@ -226,6 +295,9 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       mapContainer.removeEventListener('gesturestart', blockBrowserZoom);
       mapContainer.removeEventListener('gesturechange', blockBrowserZoom);
       mapContainer.removeEventListener('gestureend', blockBrowserZoom);
+      mapContainer.removeEventListener('touchstart', onTouchStart);
+      mapContainer.removeEventListener('touchmove', onTouchMove);
+      mapContainer.removeEventListener('touchend', onTouchEnd);
       map.remove();
       mapRef.current = null;
     };
@@ -279,7 +351,7 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
           .setLatLng([t.lat, t.lng])
           .setIcon(icon)
           .setZIndexOffset(zOff)
-          // Fade the original turbine badge while its ghost is following the cursor.
+          // Fade the original turbine badge while its ghost is following the cursor/finger.
           .setOpacity(moving ? 0.3 : 1);
       } else {
         const m = L.marker([t.lat, t.lng], { icon, zIndexOffset: zOff }).addTo(map);

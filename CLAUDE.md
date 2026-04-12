@@ -86,6 +86,15 @@ screenshots/07-delete-turbine-popover.png
 screenshots/08-clear-layout-popover.png
 screenshots/09-persisted-layout.png
 screenshots/10-export-layout.png
+screenshots/11-add-preview.png
+screenshots/12-move-preview.png
+screenshots/13-import-confirm.png
+screenshots/13-desktop-settings-popover.png
+screenshots/14-desktop-turbine-popover.png
+screenshots/15-desktop-move-mode.png
+screenshots/16-mobile-move-mode.png
+screenshots/17-mobile-move-drag-preview.png
+screenshots/17-mobile-move-drag-placed.png
 ```
 
 Use what you see to verify the change looks correct on a 393×852 iPhone viewport.

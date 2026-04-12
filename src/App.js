@@ -338,8 +338,8 @@ export default function App() {
         {mode !== 'view' && (
           <div className="mode-banner">
             {mode === 'add'
-              ? 'Tap the map to place a turbine'
-              : `Tap the map to move ${displayName}`}
+              ? (isDesktop ? 'Click the map to place a turbine' : 'Tap or drag to place a turbine')
+              : (isDesktop ? `Click the map to move ${displayName}` : `Drag to move ${displayName}`)}
           </div>
         )}
         <WindMap
@@ -391,7 +391,9 @@ export default function App() {
       )}
 
       {/* ── Mobile: bottom panel ── */}
-      {!isDesktop && (
+      {/* Hidden in move mode (matching desktop behaviour) so the user can drag
+          the map freely to choose the new turbine position. */}
+      {!isDesktop && mode !== 'move' && (
         <div className="bottom-panel">
           {selected ? (
             <TurbineEditorPanel
