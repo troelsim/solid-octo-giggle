@@ -20,3 +20,4 @@ yarn-error.log*
 playwright-results/
 test-results/
 screenshots/
+.playwright-mcp/
