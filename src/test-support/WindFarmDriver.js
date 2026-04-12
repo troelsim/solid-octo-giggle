@@ -86,9 +86,11 @@ export function createWindFarm({ storage, rawStorage } = {}) {
   // ── actions (return void; they mutate app state) ─────────────────────────
 
   return {
-    /** Enter add-turbine mode, then tap the map to place a turbine. */
+    /** Enter add-turbine mode (if not already in it), then tap the map to place a turbine. */
     addTurbine(location = { lat: 55.5, lng: 7.9 }) {
-      userEvent.click(screen.getByRole('button', { name: /add turbine/i }));
+      if (screen.getByTestId('wind-map').dataset.mode !== 'add') {
+        userEvent.click(screen.getByRole('button', { name: /add turbine/i }));
+      }
       userEvent.click(screen.getByTestId('map-surface'));
     },
 
@@ -131,6 +133,11 @@ export function createWindFarm({ storage, rawStorage } = {}) {
     /** Click Cancel to abort add or move mode. */
     cancelAction() {
       userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    },
+
+    /** Press Escape to exit add or move mode. */
+    exitAddMode() {
+      fireEvent.keyDown(document, { key: 'Escape' });
     },
 
     /** Click × to deselect the current turbine. */

@@ -51,9 +51,9 @@ test('04 custom specs — badge visible', async ({ page }) => {
 });
 
 test('05 fleet view — turbine count', async ({ page }) => {
-  // Place two turbines
+  // Enter add mode once; sticky add mode keeps it active for subsequent placements.
+  await page.getByRole('button', { name: 'Add turbine' }).click();
   for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
-    await page.getByRole('button', { name: 'Add turbine' }).click();
     await page.locator('.wind-map').click(pos);
     await page.waitForTimeout(200);
   }
@@ -74,8 +74,8 @@ test('07 delete turbine — confirmation popover', async ({ page }) => {
 
 test('08 clear layout — confirmation popover', async ({ page }) => {
   // Place two turbines then deselect to see fleet panel
+  await page.getByRole('button', { name: 'Add turbine' }).click();
   for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
-    await page.getByRole('button', { name: 'Add turbine' }).click();
     await page.locator('.wind-map').click(pos);
     await page.waitForTimeout(200);
   }
@@ -107,8 +107,8 @@ test('09 persisted layout — survives reload', async ({ page }) => {
 });
 
 test('10 export layout — csv text field', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add turbine' }).click();
   for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
-    await page.getByRole('button', { name: 'Add turbine' }).click();
     await page.locator('.wind-map').click(pos);
     await page.waitForTimeout(200);
   }
@@ -116,6 +116,17 @@ test('10 export layout — csv text field', async ({ page }) => {
   await page.getByRole('button', { name: 'Export CSV' }).click();
   await expect(page.getByRole('textbox', { name: 'Layout CSV export' })).toBeVisible();
   await page.screenshot({ path: `${SCREENSHOTS}/10-export-layout.png` });
+});
+
+test('18 batch add — multiple turbines placed without leaving add mode', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add turbine' }).click();
+  for (const pos of [{ x: 120, y: 200 }, { x: 195, y: 300 }, { x: 270, y: 200 }]) {
+    await page.locator('.wind-map').click(pos);
+    await page.waitForTimeout(150);
+  }
+  // Mode banner should still be visible (still in add mode after 3 placements).
+  await expect(page.getByText(/tap or drag to place/i)).toBeVisible();
+  await page.screenshot({ path: `${SCREENSHOTS}/18-batch-add.png` });
 });
 
 test('06 move mode — move banner', async ({ page }) => {
