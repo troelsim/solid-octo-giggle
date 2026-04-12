@@ -251,6 +251,12 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     };
 
     const onTouchMove = (e) => {
+      // Prevent browser scroll / iOS rubber-band overscroll while the user is
+      // placing a turbine.  Must be called before any early returns because the
+      // listener is registered as non-passive.  Multi-touch (pinch-to-zoom) is
+      // intentionally left unblocked so zoom remains available in add/move mode.
+      if (previewCfgRef.current && e.touches.length === 1) e.preventDefault();
+
       if (!previewCfgRef.current || e.touches.length !== 1 || !touchStartPos) return;
       const touch = e.touches[0];
       const dx = touch.clientX - touchStartPos.x;
@@ -284,7 +290,9 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     };
 
     mapContainer.addEventListener('touchstart', onTouchStart, { passive: true });
-    mapContainer.addEventListener('touchmove', onTouchMove, { passive: true });
+    // Non-passive so we can call preventDefault() to suppress browser scroll
+    // and iOS overscroll while the user is dragging to place a turbine.
+    mapContainer.addEventListener('touchmove', onTouchMove, { passive: false });
     mapContainer.addEventListener('touchend', onTouchEnd, { passive: true });
 
     mapRef.current = map;
