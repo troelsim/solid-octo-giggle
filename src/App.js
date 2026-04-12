@@ -339,7 +339,7 @@ export default function App() {
           <div className="mode-banner">
             {mode === 'add'
               ? (isDesktop ? 'Click the map to place a turbine' : 'Tap or drag to place a turbine')
-              : (isDesktop ? `Click the map to move ${displayName}` : `Drag to move ${displayName}`)}
+              : (isDesktop ? `Click the map to move ${displayName}` : `Drag or tap to move ${displayName}`)}
           </div>
         )}
         <WindMap
