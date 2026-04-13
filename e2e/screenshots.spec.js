@@ -1,8 +1,5 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
-const path = require('path');
-
-const SCREENSHOTS = path.join(__dirname, '..', 'screenshots');
 
 // Captures unexpected application-level console errors.
 // Reset in beforeEach; asserted in afterEach.
@@ -36,21 +33,21 @@ test.afterEach(async () => {
 test('01 empty farm — fleet defaults panel', async ({ page }) => {
   await expect(page.getByText('Fleet defaults')).toBeVisible();
   await expect(page.getByText('Tap + to add turbines')).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/01-empty-farm.png` });
+  await expect(page).toHaveScreenshot('01-empty-farm.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('02 add mode — placement banner', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   // Mobile viewport (default): banner says "Tap or drag to place a turbine"
   await expect(page.getByText('Tap or drag to place a turbine')).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/02-add-mode.png` });
+  await expect(page).toHaveScreenshot('02-add-mode.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('03 turbine placed — spec panel', async ({ page }) => {
   await page.getByRole('button', { name: 'Add turbine' }).click();
   await page.locator('.wind-map').click({ x: 195, y: 300 });
   await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/03-turbine-placed.png` });
+  await expect(page).toHaveScreenshot('03-turbine-placed.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('04 custom specs — badge visible', async ({ page }) => {
@@ -65,7 +62,7 @@ test('04 custom specs — badge visible', async ({ page }) => {
   await hubInput.press('Tab');
   await expect(page.getByText('custom')).toBeVisible();
 
-  await page.screenshot({ path: `${SCREENSHOTS}/04-custom-specs.png` });
+  await expect(page).toHaveScreenshot('04-custom-specs.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('05 fleet view — turbine count', async ({ page }) => {
@@ -78,7 +75,7 @@ test('05 fleet view — turbine count', async ({ page }) => {
   // Deselect to show fleet panel
   await page.getByRole('button', { name: 'Deselect' }).click();
   await expect(page.getByText('2 turbines')).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/05-fleet-view.png` });
+  await expect(page).toHaveScreenshot('05-fleet-view.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('07 delete turbine — confirmation popover', async ({ page }) => {
@@ -87,7 +84,7 @@ test('07 delete turbine — confirmation popover', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText(/delete turbine \d+\?/i)).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/07-delete-turbine-popover.png` });
+  await expect(page).toHaveScreenshot('07-delete-turbine-popover.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('08 clear layout — confirmation popover', async ({ page }) => {
@@ -101,7 +98,7 @@ test('08 clear layout — confirmation popover', async ({ page }) => {
   // Open the confirmation popover
   await page.getByRole('button', { name: 'Clear layout' }).click();
   await expect(page.getByText(/clear all 2 turbines\?/i)).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/08-clear-layout-popover.png` });
+  await expect(page).toHaveScreenshot('08-clear-layout-popover.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('09 persisted layout — survives reload', async ({ page }) => {
@@ -120,7 +117,7 @@ test('09 persisted layout — survives reload', async ({ page }) => {
 
   // Verify the fleet panel shows a turbine count (any number > 0).
   await expect(page.getByText(/\d+ turbines?/)).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/09-persisted-layout.png` });
+  await expect(page).toHaveScreenshot('09-persisted-layout.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('10 export layout — csv text field', async ({ page }) => {
@@ -132,7 +129,7 @@ test('10 export layout — csv text field', async ({ page }) => {
   await page.getByRole('button', { name: 'Deselect' }).click();
   await page.getByRole('button', { name: 'Export CSV' }).click();
   await expect(page.getByRole('textbox', { name: 'Layout CSV export' })).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/10-export-layout.png` });
+  await expect(page).toHaveScreenshot('10-export-layout.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('18 batch add — multiple turbines placed without leaving add mode', async ({ page }) => {
@@ -152,7 +149,7 @@ test('18 batch add — multiple turbines placed without leaving add mode', async
     // Banner must remain visible — confirms sticky add mode kept us in 'add' state.
     await expect(page.getByText(/tap or drag to place/i)).toBeVisible();
   }
-  await page.screenshot({ path: `${SCREENSHOTS}/18-batch-add.png` });
+  await expect(page).toHaveScreenshot('18-batch-add.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('06 move mode — move banner', async ({ page }) => {
@@ -164,7 +161,7 @@ test('06 move mode — move banner', async ({ page }) => {
   if (await moveBtn.isVisible()) {
     await moveBtn.click();
   }
-  await page.screenshot({ path: `${SCREENSHOTS}/06-move-mode.png` });
+  await expect(page).toHaveScreenshot('06-move-mode.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('11 add mode — cursor preview ghost at hover position', async ({ page }) => {
@@ -173,7 +170,7 @@ test('11 add mode — cursor preview ghost at hover position', async ({ page }) 
   await page.locator('.wind-map').hover({ position: { x: 195, y: 300 } });
   // Wait for the ghost marker to be added to the Leaflet marker pane.
   await page.waitForSelector('.leaflet-marker-pane .leaflet-marker-icon');
-  await page.screenshot({ path: `${SCREENSHOTS}/11-add-preview.png` });
+  await expect(page).toHaveScreenshot('11-add-preview.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('12 move mode — cursor preview ghost while original fades', async ({ page }) => {
@@ -189,7 +186,7 @@ test('12 move mode — cursor preview ghost while original fades', async ({ page
   await page.waitForFunction(
     () => document.querySelectorAll('.leaflet-marker-pane .leaflet-marker-icon').length >= 2
   );
-  await page.screenshot({ path: `${SCREENSHOTS}/12-move-preview.png` });
+  await expect(page).toHaveScreenshot('12-move-preview.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('13 import layout — confirmation popover', async ({ page }) => {
@@ -205,7 +202,7 @@ test('13 import layout — confirmation popover', async ({ page }) => {
   // Click Import to trigger the confirmation popover.
   await page.getByRole('button', { name: 'Import layout' }).click();
   await expect(page.getByRole('button', { name: 'Replace layout' })).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/13-import-confirm.png` });
+  await expect(page).toHaveScreenshot('13-import-confirm.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('16 mobile move mode — panel hidden, drag banner visible', async ({ page }) => {
@@ -218,7 +215,7 @@ test('16 mobile move mode — panel hidden, drag banner visible', async ({ page 
   // The bottom panel should be hidden and the drag-move banner should appear.
   await expect(page.getByText(/drag or tap to move/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /^move$/i })).not.toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/16-mobile-move-mode.png` });
+  await expect(page).toHaveScreenshot('16-mobile-move-mode.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('17 mobile move mode — drag places turbine at new position', async ({ page }) => {
@@ -245,7 +242,7 @@ test('17 mobile move mode — drag places turbine at new position', async ({ pag
     () => document.querySelectorAll('.leaflet-marker-pane .leaflet-marker-icon').length >= 2
   );
   // Screenshot the ghost-preview mid-drag.
-  await page.screenshot({ path: `${SCREENSHOTS}/17-mobile-move-drag-preview.png` });
+  await expect(page).toHaveScreenshot('17-mobile-move-drag-preview.png', { maxDiffPixelRatio: 0.002 });
   // Release to confirm placement.
   await mapEl.dispatchEvent('touchend', {
     touches: [],
@@ -253,7 +250,7 @@ test('17 mobile move mode — drag places turbine at new position', async ({ pag
   });
   // The turbine editor panel should be back (move confirmed, view mode restored).
   await expect(page.getByRole('button', { name: /^move$/i })).toBeVisible();
-  await page.screenshot({ path: `${SCREENSHOTS}/17-mobile-move-drag-placed.png` });
+  await expect(page).toHaveScreenshot('17-mobile-move-drag-placed.png', { maxDiffPixelRatio: 0.002 });
 });
 
 // ── Desktop layout (1280 × 800, no touch) ────────────────────────────────────
@@ -269,7 +266,7 @@ test.describe('desktop layout', () => {
     await expect(page.getByRole('button', { name: 'Fleet settings' })).toBeVisible();
     await page.getByRole('button', { name: 'Fleet settings' }).click();
     await expect(page.getByText('Fleet defaults')).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOTS}/13-desktop-settings-popover.png` });
+    await expect(page).toHaveScreenshot('13-desktop-settings-popover.png', { maxDiffPixelRatio: 0.002 });
   });
 
   test('14 desktop — turbine popover on turbine selection', async ({ page }) => {
@@ -286,7 +283,7 @@ test.describe('desktop layout', () => {
     // Turbine popover should be visible with spec fields and action buttons
     await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOTS}/14-desktop-turbine-popover.png` });
+    await expect(page).toHaveScreenshot('14-desktop-turbine-popover.png', { maxDiffPixelRatio: 0.002 });
   });
 
   test('15 desktop — move mode hides turbine popover', async ({ page }) => {
@@ -302,6 +299,6 @@ test.describe('desktop layout', () => {
     await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
     await page.getByRole('button', { name: 'Move' }).click();
     await expect(page.getByText(/click the map to move/i)).toBeVisible();
-    await page.screenshot({ path: `${SCREENSHOTS}/15-desktop-move-mode.png` });
+    await expect(page).toHaveScreenshot('15-desktop-move-mode.png', { maxDiffPixelRatio: 0.002 });
   });
 });

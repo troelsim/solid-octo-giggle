@@ -51,17 +51,9 @@ The layers are correct in direction but have gaps that compound as the app grows
   ```
   Run through each scenario and identify what DOM change signals completion.
 
-### 2) Switch to `toHaveScreenshot()` with committed baselines
+### ~~2) Switch to `toHaveScreenshot()` with committed baselines~~ ✅ Done
 
-- **Why this matters:** `page.screenshot()` is write-only — it produces a file but asserts nothing. Visual regressions are invisible unless someone manually reads every PNG after every run.
-- **Risk today:** A CSS change that breaks the mobile layout passes every check and only surfaces when a human happens to open the PNG.
-- **Effort:** Low–Medium.
-- **First step:**
-  1. Replace `page.screenshot({ path: ... })` calls with `expect(page).toHaveScreenshot('name.png', { maxDiffPixelRatio: 0.002 })`.
-  2. Run `playwright test --update-snapshots` once to generate golden baselines.
-  3. Commit the `e2e/snapshots/` directory.
-  4. Remove the manual PNG list from `CLAUDE.md` — the machine now tells you when something regressed.
-  5. Update baselines deliberately with `--update-snapshots` when a visual change is intentional.
+- **Completed:** Replaced all 20 `page.screenshot({ path: ... })` calls with `expect(page).toHaveScreenshot('name.png', { maxDiffPixelRatio: 0.002 })`. Generated 20 golden baselines in `e2e/screenshots.spec.js-snapshots/` and committed them. The suite now fails automatically on visual regressions. Update baselines deliberately with `--update-snapshots` when a visual change is intentional.
 
 ### 3) Add a console error guard in `beforeEach`
 
@@ -163,7 +155,7 @@ The layers are correct in direction but have gaps that compound as the app grows
 ## Quick wins checklist
 
 - [ ] Replace all `waitForTimeout` with semantic waits (item 1)
-- [ ] Switch to `toHaveScreenshot()` and commit baselines (item 2)
+- [x] Switch to `toHaveScreenshot()` and commit baselines (item 2)
 - [ ] Add console error guard in `beforeEach` (item 3)
 - [ ] Create `e2e/WindFarmPage.js` Page Object (item 4)
 - [ ] Document assertion priority order in `CLAUDE.md` (item 5)

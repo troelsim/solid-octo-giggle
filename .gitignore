@@ -22,5 +22,6 @@ test-results/
 screenshots/
 .playwright-mcp/
 
-# Ad-hoc MCP screenshots
+# Ad-hoc MCP screenshots (but allow committed Playwright baselines)
 *.png
+!e2e/screenshots.spec.js-snapshots/*.png
