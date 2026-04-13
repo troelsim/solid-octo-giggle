@@ -19,6 +19,18 @@ npm install
 npm start        # opens http://localhost:3000
 ```
 
+## Scripts
+
+| Script | What it does |
+|---|---|
+| `npm start` | Dev server (hot reload) at http://localhost:3000 |
+| `npm test -- --watchAll=false` | Unit / feature tests (JSDOM + RTL) |
+| `npm run build` | Production build to `build/` |
+| `npm run lint` | ESLint — fails on any warning |
+| `npm run lint:fix` | ESLint — auto-fix fixable issues |
+| `npm run screenshot` | Playwright visual regression suite |
+| `npm run e2e` | All Playwright tests |
+
 ## Running the tests
 
 ### Unit tests (React Testing Library + Jest)
@@ -36,7 +48,7 @@ npm run screenshot   # screenshot suite only
 npm run e2e          # full Playwright suite
 ```
 
-Committed baselines live in `e2e/snapshots/`. Update them deliberately when a visual change is intentional:
+Committed baselines live in `e2e/screenshots.spec.js-snapshots/`. Update them deliberately when a visual change is intentional:
 
 ```bash
 npx playwright test e2e/screenshots.spec.js --update-snapshots
@@ -60,11 +72,34 @@ src/
   utils/layoutCsv.js          # CSV export / import
   styles/tokens.css           # design tokens (colours, spacing, typography)
   __tests__/features/         # feature-level unit tests (15 files)
-  test-support/               # Application Driver and test helpers
+  test-support/WindFarmDriver.js  # Application Driver — test facade over RTL
   __mocks__/WindMap.js        # Leaflet stub for Jest (exposes state via data-*)
 e2e/
   screenshots.spec.js         # Playwright visual regression scenarios
+  WindFarmPage.js             # Page Object — e2e test facade
+  screenshots.spec.js-snapshots/  # committed visual baselines
 ```
+
+## Architecture
+
+### State and interaction modes
+
+`App.js` owns all application state. The map has three interaction modes:
+
+- **view** — default; clicking a turbine selects it
+- **add** — sticky; each map click places a turbine and keeps add mode active
+- **move** — while a turbine is selected; clicking the map moves it to the new position
+
+### Desktop vs mobile layout
+
+`useIsDesktop()` (a `matchMedia` hook) drives layout switching:
+
+- **Mobile** — a fixed bottom panel shows either the fleet panel or the selected-turbine editor
+- **Desktop** — fleet settings appear in a popover behind the header gear icon; selected turbine appears in a floating popover anchored near the map click
+
+### Data persistence
+
+`useLayoutStorage` saves the layout to `localStorage` on every state change and validates it with a Zod schema on load. Corrupt or schema-invalid data falls back to empty defaults silently.
 
 ## Key dependencies
 
@@ -86,3 +121,27 @@ id, latitude, longitude, hubHeight, rotorDiameter, ratedPower
 ```
 
 Values left blank in the export inherit the fleet default on import.
+
+## Coding conventions
+
+- **No hardcoded values** — use `src/styles/tokens.css` for all colours, spacing, and typography.
+- **No hand-rolled popover positioning** — use `@floating-ui/react` (`useDismiss`, `useFloating`, etc.).
+- **Test every user-facing behaviour** — new features in `App.js` / `WindMap.js` need a scenario in `src/__tests__/features/` before the task is done. See `CLAUDE.md` for the full checklist.
+- **Keep `App.js` focused** — pure helpers and domain logic belong in `src/utils/` or `src/domain/`; shared UI belongs in `src/components/`.
+
+## Codex MCP setup
+
+To mirror the Claude Playwright MCP setup for Codex, register the same server in Codex CLI:
+
+```bash
+/opt/codex/bin/codex mcp add playwright -- \
+  npx @playwright/mcp@latest \
+  --headless \
+  --executable-path /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+```
+
+Then verify registration:
+
+```bash
+/opt/codex/bin/codex mcp list
+```
