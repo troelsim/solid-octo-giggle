@@ -118,6 +118,7 @@ test('clear layout via settings popover removes all turbines', () => {
 test('turbine popover appears when turbine is selected', () => {
   const farm = createWindFarm();
   farm.addTurbine();
+  farm.exitAddMode();
   expect(farm.panelView()).toBe('turbine');
   expect(screen.getByRole('textbox', { name: /turbine name/i })).toBeInTheDocument();
 });
@@ -125,6 +126,7 @@ test('turbine popover appears when turbine is selected', () => {
 test('turbine popover shows spec fields', () => {
   const farm = createWindFarm();
   farm.addTurbine();
+  farm.exitAddMode();
   expect(screen.getByText('Hub height')).toBeInTheDocument();
   expect(screen.getByText('Rotor dia.')).toBeInTheDocument();
   expect(screen.getByText('Power')).toBeInTheDocument();
@@ -133,6 +135,7 @@ test('turbine popover shows spec fields', () => {
 test('turbine popover has Move and Delete buttons', () => {
   const farm = createWindFarm();
   farm.addTurbine();
+  farm.exitAddMode();
   expect(screen.getByRole('button', { name: /^move$/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument();
 });
@@ -140,6 +143,7 @@ test('turbine popover has Move and Delete buttons', () => {
 test('turbine spec can be edited via popover', () => {
   const farm = createWindFarm();
   farm.addTurbine();
+  farm.exitAddMode();
   farm.setSpec('Hub height', 130);
   expect(farm.selectedSpec().hubHeight).toBe(130);
   expect(farm.isShowingCustomBadge()).toBe(true);
@@ -148,6 +152,7 @@ test('turbine spec can be edited via popover', () => {
 test('deselect closes turbine popover', () => {
   const farm = createWindFarm();
   farm.addTurbine();
+  farm.exitAddMode();
   farm.deselect();
   expect(farm.panelView()).toBe('fleet');
   expect(screen.queryByRole('textbox', { name: /turbine name/i })).not.toBeInTheDocument();
@@ -156,6 +161,7 @@ test('deselect closes turbine popover', () => {
 test('delete confirmation popover works in turbine popover', () => {
   const farm = createWindFarm();
   farm.addTurbine();
+  farm.exitAddMode();
   farm.deleteSelectedTurbine();
   expect(farm.isDeletePopoverVisible()).toBe(true);
   farm.confirmDeleteTurbine();
@@ -167,9 +173,18 @@ test('bottom panel is not rendered on desktop', () => {
   expect(document.querySelector('.bottom-panel')).not.toBeInTheDocument();
 });
 
+test('turbine popover hidden during add mode', () => {
+  const farm = createWindFarm();
+  farm.addTurbine();
+  // In add mode, popover is suppressed so the user can keep placing turbines
+  expect(farm.currentMode()).toBe('add');
+  expect(screen.queryByRole('textbox', { name: /turbine name/i })).not.toBeInTheDocument();
+});
+
 test('turbine popover hidden during move mode', () => {
   const farm = createWindFarm();
   farm.addTurbine();
+  farm.exitAddMode();
   farm.startMovingSelectedTurbine();
   // In move mode, no turbine name input visible (popover suppressed)
   expect(screen.queryByRole('textbox', { name: /turbine name/i })).not.toBeInTheDocument();

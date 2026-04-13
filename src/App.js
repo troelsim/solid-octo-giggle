@@ -371,8 +371,8 @@ export default function App() {
           whenever the user selects a different turbine. */}
 
       {/* ── Desktop: turbine popover near the marker ── */}
-      {/* Hidden in move mode so the user can click the map freely to confirm. */}
-      {isDesktop && selected && mode !== 'move' && (
+      {/* Hidden in add and move modes so the user can click the map freely. */}
+      {isDesktop && selected && mode === 'view' && (
         <TurbinePopover
           anchor={selectedTurbineAnchor}
           open={true}
