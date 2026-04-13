@@ -12,8 +12,8 @@ import WindMap from './WindMap';
 import { useLayoutStorage } from './hooks/useLayoutStorage';
 import { buildLayoutCsv, parseLayoutCsv } from './utils/layoutCsv';
 import Popover from './components/Popover';
-import SpecField from './components/SpecField';
 import TurbineEditorPanel from './components/TurbineEditorPanel';
+import FleetDefaultsPanel from './components/FleetDefaultsPanel';
 import './App.css';
 
 // Returns true when the viewport is wide enough for the desktop layout (≥640 px).
@@ -77,7 +77,6 @@ export default function App() {
   const [showSpacingRing, setShowSpacingRing] = useState(true);
   const [showRingPopover, setShowRingPopover] = useState(false);
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
-  const [showClearPopover, setShowClearPopover] = useState(false);
   const [showSettingsPopover, setShowSettingsPopover] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportCsv, setExportCsv] = useState('');
@@ -88,7 +87,6 @@ export default function App() {
   // Screen-space position of the selected turbine marker — drives the desktop popover.
   const [selectedTurbineAnchor, setSelectedTurbineAnchor] = useState(null);
   const ringWrapRef = useRef(null);
-  const clearWrapRef = useRef(null);
   const settingsWrapRef = useRef(null);
   const exportRef = useRef(null);
   const importConfirmRef = useRef(null);
@@ -166,7 +164,6 @@ export default function App() {
     setTurbines([]);
     setSelectedId(null);
     setMode('view');
-    setShowClearPopover(false);
     setShowSettingsPopover(false);
     setShowExportModal(false);
     setExportCsv('');
@@ -303,29 +300,13 @@ export default function App() {
               </button>
               <Popover anchorRef={settingsWrapRef} open={showSettingsPopover} onClose={() => setShowSettingsPopover(false)} className="settings-popover">
                 <p className="popover-title">Fleet defaults</p>
-                <div className="spec-row">
-                  <SpecField label="Hub height" unit="m"  value={fleet.hubHeight}     onChange={v => setFleet(f => ({ ...f, hubHeight: v }))} />
-                  <SpecField label="Rotor dia." unit="m"  value={fleet.rotorDiameter} onChange={v => setFleet(f => ({ ...f, rotorDiameter: v }))} />
-                  <SpecField label="Power"      unit="MW" value={fleet.ratedPower}    onChange={v => setFleet(f => ({ ...f, ratedPower: v }))} />
-                </div>
-                {turbines.length > 0 && (
-                  <div className="panel-secondary">
-                    <button className="btn-text-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
-                      Apply to all turbines
-                    </button>
-                    <div ref={clearWrapRef} className="clear-wrap">
-                      <button className="btn-text-action btn-text-action--danger" onClick={() => setShowClearPopover(true)}>
-                        Clear layout
-                      </button>
-                      <Popover anchorRef={clearWrapRef} open={showClearPopover} onClose={() => setShowClearPopover(false)}>
-                        <p className="popover-title">Clear all {turbines.length} turbine{turbines.length !== 1 ? 's' : ''}?</p>
-                        <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={clearLayout}>
-                          Clear all
-                        </button>
-                      </Popover>
-                    </div>
-                  </div>
-                )}
+                <FleetDefaultsPanel
+                  fleet={fleet}
+                  onFleetChange={(key, value) => setFleet(f => ({ ...f, [key]: value }))}
+                  turbineCount={turbines.length}
+                  onApplyToAll={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}
+                  onClearLayout={clearLayout}
+                />
               </Popover>
             </div>
           )}
@@ -427,29 +408,13 @@ export default function App() {
                   {turbines.length === 0 ? 'Tap + to add turbines' : `${turbines.length} turbine${turbines.length !== 1 ? 's' : ''}`}
                 </span>
               </div>
-              <div className="spec-row">
-                <SpecField label="Hub height" unit="m"  value={fleet.hubHeight}     onChange={v => setFleet(f => ({ ...f, hubHeight: v }))} />
-                <SpecField label="Rotor dia." unit="m"  value={fleet.rotorDiameter} onChange={v => setFleet(f => ({ ...f, rotorDiameter: v }))} />
-                <SpecField label="Power"      unit="MW" value={fleet.ratedPower}    onChange={v => setFleet(f => ({ ...f, ratedPower: v }))} />
-              </div>
-              {turbines.length > 0 && (
-                <div className="panel-secondary">
-                  <button className="btn-text-action" onClick={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}>
-                    Apply to all turbines
-                  </button>
-                  <div ref={clearWrapRef} className="clear-wrap">
-                    <button className="btn-text-action btn-text-action--danger" onClick={() => setShowClearPopover(true)}>
-                      Clear layout
-                    </button>
-                    <Popover anchorRef={clearWrapRef} open={showClearPopover} onClose={() => setShowClearPopover(false)}>
-                      <p className="popover-title">Clear all {turbines.length} turbine{turbines.length !== 1 ? 's' : ''}?</p>
-                      <button className="btn-popover-confirm btn-popover-confirm--danger" onClick={clearLayout}>
-                        Clear all
-                      </button>
-                    </Popover>
-                  </div>
-                </div>
-              )}
+              <FleetDefaultsPanel
+                fleet={fleet}
+                onFleetChange={(key, value) => setFleet(f => ({ ...f, [key]: value }))}
+                turbineCount={turbines.length}
+                onApplyToAll={() => setTurbines(ts => ts.map(t => ({ ...t, custom: null })))}
+                onClearLayout={clearLayout}
+              />
             </>
           )}
         </div>
