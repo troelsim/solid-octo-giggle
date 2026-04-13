@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { StoredLayoutSchema } from '../domain/schemas';
 
 export const STORAGE_KEY = 'wind-farm-layout';
@@ -22,9 +22,26 @@ function loadSaved() {
  * Returns state + setters identical in shape to useState pairs.
  */
 export function useLayoutStorage() {
+  const isFirstVisit = useRef(!localStorage.getItem(STORAGE_KEY));
   const [turbines, setTurbines] = useState(() => loadSaved()?.turbines ?? []);
   const [fleet, setFleet] = useState(() => loadSaved()?.fleet ?? FLEET_DEFAULTS);
   const [mapView, setMapView] = useState(() => loadSaved()?.mapView ?? MAP_VIEW_DEFAULT);
+
+  // On first visit (no saved layout), try to center the map on the user's
+  // current location via the browser Geolocation API.
+  useEffect(() => {
+    if (!isFirstVisit.current) return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setMapView({
+          center: [pos.coords.latitude, pos.coords.longitude],
+          zoom: MAP_VIEW_DEFAULT.zoom,
+        });
+      },
+      () => {} // Permission denied or unavailable — keep default
+    );
+  }, []);
 
   useEffect(() => {
     try {
