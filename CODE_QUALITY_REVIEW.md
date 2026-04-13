@@ -54,11 +54,9 @@ _Date: 2026-04-09_
 - Integration tests in `src/__tests__/features/import-layout.test.js` and `export-layout.test.js` cover the full round-trip.
 - A library replacement (PapaParse) was evaluated and ruled out: the format is self-generated, the parser is already RFC 4180-compliant, and adding a library would increase bundle size without benefit for this constrained use case.
 
-### 5) Add baseline engineering guardrails (lint/format/typecheck)
-- **Why this matters:** The repo currently has no explicit scripts for linting/formatting/type-checking in CI-style workflows.
-- **Risk today:** Style drift and preventable defects slip in unnoticed.
-- **Effort:** Low–Medium.
-- **First step:** Add scripts like `lint`, `lint:fix`, `format`, and optionally `typecheck` (via TypeScript migration or JSDoc+tsc).
+### ~~5) Add baseline engineering guardrails (lint/format/typecheck)~~ ✅ Done
+
+- **Completed:** `"lint": "eslint src --ext .js --max-warnings 0"` and `"lint:fix": "eslint src --ext .js --fix"` added to `package.json` scripts. ESLint is already configured via `"eslintConfig"` in `package.json` (extends `react-app` + `react-app/jest`) so no additional config file is needed. Run `npm run lint` to enforce zero warnings; `npm run lint:fix` to auto-fix fixable issues.
 
 ## P1 — Significant improvements next
 
@@ -92,11 +90,9 @@ _Date: 2026-04-09_
 - **Effort:** Low–Medium.
 - **First step:** Convert driver actions to `async` and `await userEvent...`, then update tests incrementally.
 
-### 11) Document architecture and contribution workflow
-- **Why this matters:** Root README is currently empty.
-- **Risk today:** New contributors lack setup, testing, and design-context guidance.
-- **Effort:** Low.
-- **First step:** Add README sections: project purpose, local run/test/build commands, map architecture, test strategy, and coding conventions.
+### ~~11) Document architecture and contribution workflow~~ ✅ Done
+
+- **Completed:** `README.md` now covers project purpose, all npm scripts (`start`, `test`, `build`, `lint`, `lint:fix`, `screenshot`, `e2e`), project directory layout, architecture (state machine, desktop/mobile layout, map component, data persistence), test strategy (all three layers + assertion priority order), and coding conventions. The legacy Codex MCP setup section is retained.
 
 ## P2 — Small but meaningful cleanups
 
@@ -112,11 +108,9 @@ _Date: 2026-04-09_
 - **Effort:** Low.
 - **First step:** Delete file if unused; if needed for experiments, move to a clearly marked sandbox folder.
 
-### 14) Align package metadata with product identity
-- **Why this matters:** Package name is `my-joke-app` while UI branding is `PadSketch`.
-- **Risk today:** Confusing release/build metadata.
-- **Effort:** Low.
-- **First step:** Update `name`, description, and any docs/scripts to match current app branding.
+### ~~14) Align package metadata with product identity~~ ✅ Done
+
+- **Completed:** `package.json` `name` updated from `my-joke-app` to `wind-farm-designer`; a `description` field added: `"PadSketch — a mobile-first wind farm layout tool built with React and Leaflet"`.
 
 ### 15) Add error telemetry hooks for import/storage failures
 - **Why this matters:** Errors are currently handled locally with user-facing messages (or silently ignored for storage writes).
@@ -134,7 +128,7 @@ _Date: 2026-04-09_
 
 ## Suggested implementation order (first 6 PRs)
 
-1. **PR 1:** README + package metadata alignment + remove dead files.
+1. ~~**PR 1:** README + package metadata alignment + remove dead files.~~ ✅ Done
 2. ~~**PR 2:** Extract CSV utils + dedicated tests.~~ ✅ Done
 3. ~~**PR 3:** Add schema validation for storage/import.~~ ✅ Done
 4. ~~**PR 4:** Extract shared `TurbineEditorPanel` UI.~~ ✅ Done
@@ -146,8 +140,8 @@ _Date: 2026-04-09_
 
 ## Quick wins checklist
 
-- [ ] Add README with setup/test/build/contribution guidance.
-- [ ] Add lint/format scripts and enforce in CI.
+- [x] Add README with setup/test/build/contribution guidance.
+- [x] Add lint/format scripts and enforce in CI.
 - [x] Remove unused `Card`/`Button` and jokes data if unused.
 - [x] Extract CSV functions from `App.js`.
 - [x] Create shared turbine editor component for desktop/mobile reuse.

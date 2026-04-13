@@ -1,5 +1,6 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { WindFarmPage } = require('./WindFarmPage');
 
 // Captures unexpected application-level console errors.
 // Reset in beforeEach; asserted in afterEach.
@@ -79,11 +80,10 @@ test('05 fleet view — turbine count', async ({ page }) => {
 });
 
 test('07 delete turbine — confirmation popover', async ({ page }) => {
-  await page.getByRole('button', { name: 'Add turbine' }).click();
-  await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
-  await page.getByRole('button', { name: 'Delete' }).click();
-  await expect(page.getByText(/delete turbine \d+\?/i)).toBeVisible();
+  const farm = new WindFarmPage(page);
+  await farm.enterAddMode();
+  await farm.placeTurbine();
+  await farm.openDeletePopover();
   await expect(page).toHaveScreenshot('07-delete-turbine-popover.png', { maxDiffPixelRatio: 0.002 });
 });
 
@@ -190,30 +190,20 @@ test('12 move mode — cursor preview ghost while original fades', async ({ page
 });
 
 test('13 import layout — confirmation popover', async ({ page }) => {
-  // Place a turbine so there is something to overwrite.
-  await page.getByRole('button', { name: 'Add turbine' }).click();
-  await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
-  // Open the import modal.
-  await page.getByRole('button', { name: 'Import CSV' }).click();
-  // Paste a CSV.
+  const farm = new WindFarmPage(page);
+  await farm.enterAddMode();
+  await farm.placeTurbine();
   const csv = 'Latitude,Longitude,Name,Description\n55.1,7.9,Alpha,V80-2.0MW';
-  await page.getByRole('textbox', { name: 'CSV to import' }).fill(csv);
-  // Click Import to trigger the confirmation popover.
-  await page.getByRole('button', { name: 'Import layout' }).click();
-  await expect(page.getByRole('button', { name: 'Replace layout' })).toBeVisible();
+  await farm.importAndConfirm(csv);
   await expect(page).toHaveScreenshot('13-import-confirm.png', { maxDiffPixelRatio: 0.002 });
 });
 
 test('16 mobile move mode — panel hidden, drag banner visible', async ({ page }) => {
-  // Place a turbine.
-  await page.getByRole('button', { name: 'Add turbine' }).click();
-  await page.locator('.wind-map').click({ x: 195, y: 300 });
-  await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
-  // Enter move mode.
-  await page.getByRole('button', { name: 'Move' }).click();
+  const farm = new WindFarmPage(page);
+  await farm.enterAddMode();
+  await farm.placeTurbine();
+  await farm.enterMoveMode();
   // The bottom panel should be hidden and the drag-move banner should appear.
-  await expect(page.getByText(/drag or tap to move/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /^move$/i })).not.toBeVisible();
   await expect(page).toHaveScreenshot('16-mobile-move-mode.png', { maxDiffPixelRatio: 0.002 });
 });
