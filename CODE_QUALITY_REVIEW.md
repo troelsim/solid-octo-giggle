@@ -12,8 +12,8 @@ _Date: 2026-04-09_
 
 1. **Split the `App` monolith into feature-focused modules/components.**
    - `src/App.js` currently combines UI rendering, interaction state, CSV parsing/serialization, layout import/export flows, and selection logic in one file.
-2. **Extract shared turbine panel UI used in both desktop and mobile paths.**
-   - There is substantial duplicated markup/logic for selected turbine actions and spec editing.
+2. **Extract shared turbine panel UI used in both desktop and mobile paths.** ✅ Done
+   - `TurbineEditorPanel` and `FleetDefaultsPanel` now own the desktop/mobile duplicated markup; `App.js` has shrunk from 707 → 510 lines.
 3. **Harden data boundaries (storage + CSV) with schema-based validation and central domain models.**
    - Parsing and shape assumptions are currently ad hoc.
 4. **Reduce rendering churn in map synchronization.**
@@ -28,16 +28,19 @@ _Date: 2026-04-09_
 ## P0 — High impact / should start now
 
 ### 1) Break up `src/App.js` (state machine + feature modules)
-- **Why this matters:** `App.js` is 707 lines and owns too many responsibilities (view orchestration, mutation logic, CSV I/O, desktop/mobile layouts, popovers, and modal workflows).
+- **Why this matters:** `App.js` started at 707 lines and has been reduced to 510 by extracting `TurbineEditorPanel`, `FleetDefaultsPanel`, `Popover`, `SpecField`, and the CSV/schema utilities; it still owns too many responsibilities (view orchestration, mutation logic, desktop/mobile layouts, import/export modal workflows).
 - **Risk today:** Harder onboarding, high regression chance when modifying one concern, and more merge conflicts.
 - **Effort:** High.
 - **First step:** Create `features/layout-io`, `features/turbine-editor`, and `features/fleet-settings` folders; move pure helpers (`parseLayoutCsv`, `buildLayoutCsv`) out first, then UI sections.
 
-### 2) ~~Deduplicate desktop/mobile selected-turbine panel markup~~ ✅ Done
-- **Completed:** `src/components/TurbineEditorPanel.js` now owns the selected-turbine editor markup (title input, Move/Delete buttons, delete confirmation popover, spec fields, secondary actions) and is rendered from both the desktop `TurbinePopover` and the mobile `.bottom-panel`.
-- The panel owns its own delete-popover state locally; `key={selected.id}` in the parent resets it naturally when switching turbines, so `App.js` no longer needs `showDeletePopover` state, `deleteWrapRef`, or the manual reset calls in `handleTurbineClick`/`deleteTurbine`.
-- `Popover` and `SpecField` were also extracted to their own files under `src/components/` so both `App.js` and the new panel can reuse them without circular imports.
-- Covered by existing feature tests (`turbine-specs`, `delete-turbine`, `turbine-management`, `desktop-layout`) plus the Playwright screenshot suite, which renders the shared panel in both mobile and desktop contexts.
+### 2) ~~Deduplicate desktop/mobile panel markup~~ ✅ Done
+- **Completed (selected-turbine panel):** `src/components/TurbineEditorPanel.js` now owns the selected-turbine editor markup (title input, Move/Delete buttons, delete confirmation popover, spec fields, secondary actions) and is rendered from both the desktop `TurbinePopover` and the mobile `.bottom-panel`.
+  - The panel owns its own delete-popover state locally; `key={selected.id}` in the parent resets it naturally when switching turbines, so `App.js` no longer needs `showDeletePopover` state, `deleteWrapRef`, or the manual reset calls in `handleTurbineClick`/`deleteTurbine`.
+  - `Popover` and `SpecField` were also extracted to their own files under `src/components/` so both `App.js` and the new panel can reuse them without circular imports.
+- **Completed (fleet defaults panel):** `src/components/FleetDefaultsPanel.js` now owns the fleet spec editor markup (Hub height/Rotor dia./Power spec fields, "Apply to all turbines" button, Clear-layout confirmation popover) and is rendered from both the desktop settings popover and the mobile bottom panel.
+  - The component owns its own `clearWrapRef` and `showClearPopover` state, removing a subtle bug where both layout paths shared the same ref — if the viewport was resized while the clear popover was open, the popover would reanchor to a stale or missing element.
+  - `App.js` no longer needs `showClearPopover`, `clearWrapRef`, or the `setShowClearPopover(false)` call in `clearLayout`; the SpecField import was also removed as it is now only used inside the dedicated component.
+- Both components are covered by existing feature tests (`clear-layout`, `fleet-defaults`, `turbine-specs`, `delete-turbine`, `turbine-management`, `desktop-layout`) which continue to pass unchanged.
 
 ### 3) ~~Introduce schema validation for persisted/imported layout data~~ ✅ Done
 - **Completed:** `src/domain/schemas.js` added with Zod schemas for `TurbineSchema`, `FleetSpecSchema`, `MapViewSchema`, and `StoredLayoutSchema`.
@@ -135,6 +138,7 @@ _Date: 2026-04-09_
 2. ~~**PR 2:** Extract CSV utils + dedicated tests.~~ ✅ Done
 3. ~~**PR 3:** Add schema validation for storage/import.~~ ✅ Done
 4. ~~**PR 4:** Extract shared `TurbineEditorPanel` UI.~~ ✅ Done
+4a. ~~**PR 4a:** Extract shared `FleetDefaultsPanel` UI.~~ ✅ Done
 5. **PR 5:** Split `App` feature modules.
 6. **PR 6:** Map sync performance pass + profiling notes.
 
@@ -147,3 +151,4 @@ _Date: 2026-04-09_
 - [x] Remove unused `Card`/`Button` and jokes data if unused.
 - [x] Extract CSV functions from `App.js`.
 - [x] Create shared turbine editor component for desktop/mobile reuse.
+- [x] Create shared fleet defaults component for desktop/mobile reuse.
