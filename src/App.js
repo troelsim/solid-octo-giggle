@@ -74,7 +74,7 @@ export default function App() {
   const { turbines, setTurbines, fleet, setFleet, mapView, setMapView } = useLayoutStorage();
   const [selectedId, setSelectedId] = useState(null);
   const [mode, setMode] = useState('view');
-  const [showSpacingRing, setShowSpacingRing] = useState(false);
+  const [showSpacingRing, setShowSpacingRing] = useState(true);
   const [showRingPopover, setShowRingPopover] = useState(false);
   const [spacingRingDiameters, setSpacingRingDiameters] = useState(2);
   const [showClearPopover, setShowClearPopover] = useState(false);
