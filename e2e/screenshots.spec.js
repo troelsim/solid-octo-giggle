@@ -280,6 +280,8 @@ test.describe('desktop layout', () => {
     await expect(page.getByRole('button', { name: 'Add turbine' })).toBeVisible();
     await page.getByRole('button', { name: 'Add turbine' }).click();
     await page.locator('.wind-map').click({ x: 640, y: 400 });
+    // Exit add mode so the popover appears
+    await page.keyboard.press('Escape');
     await expect(page.getByRole('textbox', { name: 'Turbine name' })).toBeVisible();
     // Turbine popover should be visible with spec fields and action buttons
     await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
@@ -295,6 +297,8 @@ test.describe('desktop layout', () => {
     await expect(page.getByRole('button', { name: 'Add turbine' })).toBeVisible();
     await page.getByRole('button', { name: 'Add turbine' }).click();
     await page.locator('.wind-map').click({ x: 640, y: 400 });
+    // Exit add mode so the popover appears, then enter move mode
+    await page.keyboard.press('Escape');
     await expect(page.getByRole('button', { name: 'Move' })).toBeVisible();
     await page.getByRole('button', { name: 'Move' }).click();
     await expect(page.getByText(/click the map to move/i)).toBeVisible();
