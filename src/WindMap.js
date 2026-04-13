@@ -347,6 +347,21 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     tileLayerRef.current.bringToBack();
   }, [satellite]);
 
+  // Fly to new center/zoom when props change externally (e.g., after geolocation).
+  // Compares against the map's current position so user-initiated pans (which
+  // echo back through onViewChange) are ignored.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const c = map.getCenter();
+    if (
+      Math.abs(c.lat - center[0]) < 0.001 &&
+      Math.abs(c.lng - center[1]) < 0.001 &&
+      map.getZoom() === zoom
+    ) return;
+    map.setView(center, zoom);
+  }, [center, zoom]);
+
   // Sync turbine markers and spacing rings
   useEffect(() => {
     const map = mapRef.current;
