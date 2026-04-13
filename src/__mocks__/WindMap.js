@@ -11,6 +11,14 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       data-spacing-ring-diameters={spacingRingDiameters}
       data-center={JSON.stringify(center)}
       data-zoom={zoom}
+      onMouseDown={(e) => {
+        // Simulate middle-mouse-button panning: the real WindMap lets middle-
+        // click-drag pan the map even when left-button dragging is disabled.
+        if (e.button === 1) {
+          e.preventDefault();
+          onViewChange?.([56.0, 8.5], 12);
+        }
+      }}
     >
       {turbines.map((t, i) => (
         <button

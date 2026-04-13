@@ -338,6 +338,11 @@ export function createWindFarm({ storage, rawStorage } = {}) {
       return parseFloat(screen.getByTestId('wind-map').dataset.spacingRingDiameters);
     },
 
+    /** Simulate a middle-mouse-button drag to pan the map. */
+    middleMouseDragMap() {
+      fireEvent.mouseDown(screen.getByTestId('wind-map'), { button: 1 });
+    },
+
     /** Simulate a user panning/zooming the map to [56.0, 8.5] at zoom 12. */
     changeMapView() {
       userEvent.click(screen.getByTestId('map-view-change'));

@@ -283,6 +283,34 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     mapContainer.addEventListener('touchmove', onTouchMove, { passive: false });
     mapContainer.addEventListener('touchend', onTouchEnd, { passive: true });
 
+    // Middle-mouse-button panning — allows panning even when Leaflet's default
+    // left-button dragging is disabled (add/move mode).  On desktop left-click
+    // is reserved for turbine placement; middle-click-drag still pans the map.
+    let midPanStart = null;
+
+    const onMidDown = (e) => {
+      if (e.button !== 1) return;
+      e.preventDefault();
+      midPanStart = { x: e.clientX, y: e.clientY };
+    };
+
+    const onMidMove = (e) => {
+      if (!midPanStart) return;
+      const dx = e.clientX - midPanStart.x;
+      const dy = e.clientY - midPanStart.y;
+      midPanStart = { x: e.clientX, y: e.clientY };
+      map.panBy([-dx, -dy], { animate: false });
+    };
+
+    const onMidUp = (e) => {
+      if (e.button !== 1) return;
+      midPanStart = null;
+    };
+
+    mapContainer.addEventListener('mousedown', onMidDown);
+    document.addEventListener('mousemove', onMidMove);
+    document.addEventListener('mouseup', onMidUp);
+
     mapRef.current = map;
     return () => {
       if (cursorMarkerRef.current) { cursorMarkerRef.current.remove(); cursorMarkerRef.current = null; }
@@ -298,6 +326,9 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       mapContainer.removeEventListener('touchstart', onTouchStart);
       mapContainer.removeEventListener('touchmove', onTouchMove);
       mapContainer.removeEventListener('touchend', onTouchEnd);
+      mapContainer.removeEventListener('mousedown', onMidDown);
+      document.removeEventListener('mousemove', onMidMove);
+      document.removeEventListener('mouseup', onMidUp);
       map.remove();
       mapRef.current = null;
     };
