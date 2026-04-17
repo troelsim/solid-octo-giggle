@@ -148,9 +148,12 @@ export function createWindFarm({ storage, rawStorage } = {}) {
       userEvent.click(screen.getByTestId('map-surface'));
     },
 
-    /** Click Cancel to abort add or move mode. */
+    /** Click Cancel / Exit to abort add or move mode. */
     cancelAction() {
-      userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+      // Desktop: text "Cancel" button in header. Mobile: "Exit mode" FAB icon button.
+      const btn = screen.queryByRole('button', { name: /cancel/i })
+        ?? screen.getByRole('button', { name: /exit mode/i });
+      userEvent.click(btn);
     },
 
     /** Press Escape to exit add or move mode. */
