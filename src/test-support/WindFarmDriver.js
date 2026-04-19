@@ -85,13 +85,24 @@ export function createWindFarm({ storage, rawStorage } = {}) {
 
   // ── actions (return void; they mutate app state) ─────────────────────────
 
+  // Tap the map surface at a specific lat/lng.  The mock reads these from
+  // the host's dataset before firing onMapClick, so vertices and turbines
+  // can be placed at distinct coordinates within a single test.
+  function clickMapAt(lat, lng) {
+    const host = screen.getByTestId('wind-map');
+    host.dataset.clickLat = String(lat);
+    host.dataset.clickLng = String(lng);
+    userEvent.click(screen.getByTestId('map-surface'));
+  }
+
   return {
     /** Enter add-turbine mode (if not already in it), then tap the map to place a turbine. */
-    addTurbine(location = { lat: 55.5, lng: 7.9 }) {
+    addTurbine(location) {
       if (screen.getByTestId('wind-map').dataset.mode !== 'add') {
         userEvent.click(screen.getByRole('button', { name: /add turbine/i }));
       }
-      userEvent.click(screen.getByTestId('map-surface'));
+      if (location) clickMapAt(location.lat, location.lng);
+      else userEvent.click(screen.getByTestId('map-surface'));
     },
 
     /** Click a turbine marker on the map by its 1-based display number. */
@@ -346,6 +357,38 @@ export function createWindFarm({ storage, rawStorage } = {}) {
     /** Simulate a user panning/zooming the map to [56.0, 8.5] at zoom 12. */
     changeMapView() {
       userEvent.click(screen.getByTestId('map-view-change'));
+    },
+
+    // ── Polygon-packing actions ────────────────────────────────────────────
+
+    /** Enter polygon-draw mode by clicking the Pack-area button. */
+    startPackArea() {
+      userEvent.click(screen.getByRole('button', { name: /pack area with turbines/i }));
+    },
+
+    /** Add a polygon vertex at (lat, lng) by tapping the map. */
+    addPolygonVertex(lat, lng) {
+      clickMapAt(lat, lng);
+    },
+
+    /** Add multiple vertices in sequence — shorthand for tests. */
+    addPolygonVertices(points) {
+      for (const p of points) clickMapAt(p.lat, p.lng);
+    },
+
+    /** Click Fill in the banner to pack the drawn polygon with turbines. */
+    confirmPackArea() {
+      userEvent.click(screen.getByRole('button', { name: /fill area with turbines/i }));
+    },
+
+    /** Current vertex count in the polygon draft (0 when not drawing). */
+    polygonVertexCount() {
+      return parseInt(screen.getByTestId('wind-map').dataset.polygonVertexCount, 10);
+    },
+
+    /** True when the Fill button is enabled (≥ 3 vertices). */
+    isFillEnabled() {
+      return !screen.getByRole('button', { name: /fill area with turbines/i }).disabled;
     },
 
     /** Current center [lat, lng] that the WindMap is receiving. */
