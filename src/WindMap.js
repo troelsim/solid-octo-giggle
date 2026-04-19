@@ -90,7 +90,7 @@ function makeCursorPreviewIcon() {
   });
 }
 
-export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters, center, zoom, onViewChange, onSelectedTurbineMove }) {
+export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurbineClick, fleet, showSpacingRing, spacingRingDiameters, polygonDraft, center, zoom, onViewChange, onSelectedTurbineMove }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef({});
@@ -100,6 +100,8 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
   const previewCfgRef = useRef(null);
   const cursorMarkerRef = useRef(null);
   const cursorRingRef = useRef(null);
+  const polygonLayerRef = useRef(null);
+  const polygonVertexMarkersRef = useRef([]);
   const satInitRef = useRef(false);
   const initialCenter = useRef(center ?? [55.5, 7.9]);
   const initialZoom = useRef(zoom ?? 10);
@@ -108,7 +110,9 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
   // Always keep callbacks and preview config fresh without re-running effects
   useEffect(() => {
     cbRef.current = { onMapClick, onTurbineClick, onViewChange, selectedId, turbines, onSelectedTurbineMove };
-    previewCfgRef.current = mode !== 'view' ? {
+    // The ghost-turbine preview is only meaningful for placement gestures
+    // (add / move).  In 'draw' mode a polygon vertex is placed instead.
+    previewCfgRef.current = mode === 'add' || mode === 'move' ? {
       mode, turbines, selectedId, fleet, showSpacingRing, spacingRingDiameters,
     } : null;
   });
@@ -315,6 +319,9 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
     return () => {
       if (cursorMarkerRef.current) { cursorMarkerRef.current.remove(); cursorMarkerRef.current = null; }
       if (cursorRingRef.current) { cursorRingRef.current.remove(); cursorRingRef.current = null; }
+      if (polygonLayerRef.current) { polygonLayerRef.current.remove(); polygonLayerRef.current = null; }
+      polygonVertexMarkersRef.current.forEach(m => m.remove());
+      polygonVertexMarkersRef.current = [];
       Object.values(markersRef.current).forEach(m => m.remove());
       markersRef.current = {};
       Object.values(ringsRef.current).forEach(r => r.remove());
@@ -444,6 +451,57 @@ export default function WindMap({ turbines, selectedId, mode, onMapClick, onTurb
       }
     }
   }, [turbines, selectedId, mode, showSpacingRing, spacingRingDiameters, fleet]);
+
+  // Draw/update the polygon draft (vertex dots + closing edge) whenever it
+  // changes.  Nothing is rendered once polygonDraft is empty.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const draft = polygonDraft ?? [];
+
+    // Clear old vertex markers; they're cheap to re-create each change.
+    polygonVertexMarkersRef.current.forEach(m => m.remove());
+    polygonVertexMarkersRef.current = [];
+
+    if (draft.length === 0) {
+      if (polygonLayerRef.current) {
+        polygonLayerRef.current.remove();
+        polygonLayerRef.current = null;
+      }
+      return;
+    }
+
+    const latlngs = draft.map(v => [v.lat, v.lng]);
+
+    // Polyline while < 3 vertices; closed polygon from 3 vertices onward.
+    if (polygonLayerRef.current) polygonLayerRef.current.remove();
+    const style = {
+      color: 'rgba(42, 170, 120, 0.9)',
+      weight: 2,
+      dashArray: '6 5',
+      fill: draft.length >= 3,
+      fillColor: 'rgba(42, 170, 120, 0.15)',
+      fillOpacity: 1,
+      interactive: false,
+    };
+    polygonLayerRef.current = draft.length >= 3
+      ? L.polygon(latlngs, style).addTo(map)
+      : L.polyline(latlngs, style).addTo(map);
+
+    // Vertex dots so the user can see exactly where each click landed.
+    draft.forEach(v => {
+      const dot = L.circleMarker([v.lat, v.lng], {
+        radius: 5,
+        color: '#f2ede6',
+        weight: 2,
+        fillColor: 'rgba(42, 170, 120, 0.95)',
+        fillOpacity: 1,
+        interactive: false,
+      }).addTo(map);
+      polygonVertexMarkersRef.current.push(dot);
+    });
+  }, [polygonDraft]);
 
   return (
     <div className="wind-map-wrapper">

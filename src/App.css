@@ -360,6 +360,67 @@
   transform: scale(0.93);
 }
 
+/* ── Pack-area button (polygon icon) ── */
+.btn-pack {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25) !important;
+  background: rgba(255,255,255,0.08);
+  color: rgba(242, 237, 230, 0.75);
+}
+
+.btn-pack:active {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ── Banner controls (draw mode) ── */
+.banner-draw {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: center;
+  width: 100%;
+}
+
+.banner-draw-text {
+  min-width: 0;
+}
+
+.btn-banner {
+  padding: 4px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-banner:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-banner:not(:disabled):active {
+  background: rgba(255,255,255,0.28);
+}
+
+.btn-banner-fill {
+  background: #fff;
+  color: var(--color-primary);
+  border-color: #fff;
+}
+
+.btn-banner-fill:disabled {
+  background: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.75);
+}
+
 .btn-ring-toggle {
   width: 36px;
   height: 36px;

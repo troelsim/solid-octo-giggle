@@ -101,6 +101,32 @@ class WindFarmPage {
     await expect(this.page.getByRole('button', { name: 'Replace layout' })).toBeVisible();
   }
 
+  // ── pack-area (polygon drawing) ────────────────────────────────────────────
+
+  /** Click the Pack-area header button to enter polygon-draw mode. */
+  async enterPackAreaMode() {
+    await this.page.getByRole('button', { name: 'Pack area with turbines' }).click();
+    await expect(this.page.getByText(/outline an area/i)).toBeVisible();
+  }
+
+  /**
+   * Place polygon vertices at the given on-map pixel coordinates.
+   * Uses page.mouse.click() so Leaflet's tap module doesn't double-fire in
+   * hasTouch contexts.
+   * @param {Array<{x:number, y:number}>} positions
+   */
+  async addPolygonVertices(positions) {
+    const box = await this.page.locator('.wind-map').boundingBox();
+    for (const p of positions) {
+      await this.page.mouse.click(box.x + p.x, box.y + p.y);
+    }
+  }
+
+  /** Click Fill in the banner to pack the drawn polygon with turbines. */
+  async confirmFill() {
+    await this.page.getByRole('button', { name: 'Fill area with turbines' }).click();
+  }
+
   // ── queries ────────────────────────────────────────────────────────────────
 
   /** Assert that the turbine count badge shows exactly `n` turbines. */

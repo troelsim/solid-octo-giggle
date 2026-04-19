@@ -243,6 +243,69 @@ test('17 mobile move mode — drag places turbine at new position', async ({ pag
   await expect(page).toHaveScreenshot('17-mobile-move-drag-placed.png', { maxDiffPixelRatio: 0.002 });
 });
 
+test('19 pack area — empty draw-mode banner', async ({ page }) => {
+  const farm = new WindFarmPage(page);
+  await farm.enterPackAreaMode();
+  await expect(page.getByText(/outline an area.*0\/3/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Fill area with turbines' })).toBeDisabled();
+  await expect(page).toHaveScreenshot('19-pack-empty.png', { maxDiffPixelRatio: 0.002 });
+});
+
+test('20 pack area — polygon drawn with 4 vertices, Fill enabled', async ({ page }) => {
+  // Zoom in so the polygon covers a small-enough area that Fill places only
+  // a handful of turbines (avoiding a huge marker count at default zoom).
+  await page.evaluate(() => localStorage.setItem(
+    'wind-farm-layout',
+    JSON.stringify({
+      turbines: [],
+      fleet: { hubHeight: 120, rotorDiameter: 150, ratedPower: 5.0 },
+      mapView: { center: [55.5, 7.9], zoom: 15 },
+    })
+  ));
+  await page.reload();
+  await page.waitForSelector('.wind-map');
+
+  const farm = new WindFarmPage(page);
+  await farm.enterPackAreaMode();
+  await farm.addPolygonVertices([
+    { x: 120, y: 260 },
+    { x: 280, y: 260 },
+    { x: 280, y: 520 },
+    { x: 120, y: 520 },
+  ]);
+  await expect(page.getByText(/\d+ vertices/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Fill area with turbines' })).toBeEnabled();
+  // Wait for the closing polygon edge + vertex dots to render.
+  await page.waitForSelector('.leaflet-overlay-pane path');
+  await expect(page).toHaveScreenshot('20-pack-polygon.png', { maxDiffPixelRatio: 0.002 });
+});
+
+test('21 pack area — turbines placed after Fill', async ({ page }) => {
+  await page.evaluate(() => localStorage.setItem(
+    'wind-farm-layout',
+    JSON.stringify({
+      turbines: [],
+      fleet: { hubHeight: 120, rotorDiameter: 150, ratedPower: 5.0 },
+      mapView: { center: [55.5, 7.9], zoom: 15 },
+    })
+  ));
+  await page.reload();
+  await page.waitForSelector('.wind-map');
+
+  const farm = new WindFarmPage(page);
+  await farm.enterPackAreaMode();
+  await farm.addPolygonVertices([
+    { x: 120, y: 260 },
+    { x: 280, y: 260 },
+    { x: 280, y: 520 },
+    { x: 120, y: 520 },
+  ]);
+  await farm.confirmFill();
+  // After fill: fleet-defaults panel shows the turbine count.
+  await expect(page.getByText(/\d+ turbines?$/)).toBeVisible();
+  await expect(page).toHaveScreenshot('21-pack-filled.png', { maxDiffPixelRatio: 0.002 });
+});
+
 // ── Desktop layout (1280 × 800, no touch) ────────────────────────────────────
 
 test.describe('desktop layout', () => {
