@@ -245,7 +245,7 @@ export default function App() {
           ) : (
             <button
               className="btn-text btn-cancel"
-              onClick={() => { setMode('view'); setPolygonDraft([]); }}
+              onClick={cancelPackArea}
             >
               Cancel
             </button>
