@@ -173,6 +173,13 @@ test('bottom panel is not rendered on desktop', () => {
   expect(document.querySelector('.bottom-panel')).not.toBeInTheDocument();
 });
 
+test('add-turbine button is in the header on desktop', () => {
+  createWindFarm();
+  const btn = screen.getByRole('button', { name: /add turbine/i });
+  expect(btn.closest('.app-header')).not.toBeNull();
+  expect(btn.closest('.map-fab')).toBeNull();
+});
+
 test('turbine popover hidden during add mode', () => {
   const farm = createWindFarm();
   farm.addTurbine();

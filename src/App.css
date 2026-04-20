@@ -78,6 +78,40 @@
   cursor: crosshair;
 }
 
+/* ── Mobile FAB — add / cancel button bottom-right of map area ── */
+.map-fab {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: 800;
+}
+
+.map-fab .btn-add {
+  width: 52px;
+  height: 52px;
+  font-size: 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), var(--shadow-primary);
+}
+
+.btn-fab-exit {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: rgba(17, 20, 16, 0.82);
+  color: var(--color-text);
+  font-size: 20px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.btn-fab-exit:active {
+  background: rgba(200, 49, 42, 0.25);
+  border-color: rgba(200, 49, 42, 0.5) !important;
+  color: #f87171;
+}
+
 /* Layer toggle button (over map, top-left) */
 .layer-btn {
   position: absolute;

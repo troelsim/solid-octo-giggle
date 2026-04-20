@@ -232,7 +232,7 @@ export default function App() {
               </Popover>
             </div>
           )}
-          {mode === 'view' ? (
+          {isDesktop && (mode === 'view' ? (
             <>
               <button
                 className="btn-icon btn-pack"
@@ -260,11 +260,45 @@ export default function App() {
             >
               Cancel
             </button>
-          )}
+          ))}
         </div>
       </header>
 
       <div className="map-area">
+        {!isDesktop && (
+          <div className="map-fab">
+            {mode === 'view' ? (
+              <>
+                <button
+                  className="btn-icon btn-pack"
+                  onClick={startPackArea}
+                  aria-label="Pack area with turbines"
+                  title="Draw a polygon to fill with turbines"
+                >
+                  <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round">
+                    <polygon points="4,6 10,2.5 16,6 16,14 10,17.5 4,14" />
+                    <circle cx="10" cy="10" r="1.4" fill="currentColor" stroke="none" />
+                    <circle cx="7" cy="8" r="1"   fill="currentColor" stroke="none" />
+                    <circle cx="13" cy="8" r="1"  fill="currentColor" stroke="none" />
+                    <circle cx="7" cy="12" r="1"  fill="currentColor" stroke="none" />
+                    <circle cx="13" cy="12" r="1" fill="currentColor" stroke="none" />
+                  </svg>
+                </button>
+                <button className="btn-icon btn-add" onClick={() => { setSelectedId(null); setMode('add'); }} aria-label="Add turbine">
+                  +
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn-icon btn-fab-exit"
+                onClick={() => { setMode('view'); setPolygonDraft([]); }}
+                aria-label="Exit mode"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
         {mode !== 'view' && (
           <div className="mode-banner">
             {mode === 'add' && (isDesktop ? 'Click the map to place a turbine' : 'Tap or drag to place a turbine')}
