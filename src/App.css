@@ -468,6 +468,62 @@
   background: rgba(255,255,255,0.1);
 }
 
+/* ── Overflow menu (mobile header "⋯") ── */
+.overflow-wrap {
+  position: relative;
+}
+
+.btn-overflow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25) !important;
+  background: rgba(255,255,255,0.08);
+  color: rgba(242, 237, 230, 0.75);
+}
+
+.btn-overflow--on {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+}
+
+.btn-overflow:active {
+  background: rgba(255,255,255,0.15);
+}
+
+.overflow-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: var(--space-1);
+}
+
+.overflow-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.overflow-item:not(:disabled):active,
+.overflow-item:not(:disabled):hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.overflow-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ── Desktop turbine popover ── */
 .turbine-popover {
   min-width: 220px;
