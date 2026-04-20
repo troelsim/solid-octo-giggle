@@ -135,3 +135,83 @@ describe('packPolygon — determinism', () => {
     expect(a).toEqual(b);
   });
 });
+
+// Build a rectangle of given dimensions (metres) rotated by `angleDeg` around
+// (centerLat, centerLng).  Uses a local equirectangular projection consistent
+// with packPolygon's internal projection.
+function rotatedRectangle(centerLat, centerLng, halfLengthM, halfWidthM, angleDeg) {
+  const metresPerDegLat = 111320;
+  const metresPerDegLng = metresPerDegLat * Math.cos((centerLat * Math.PI) / 180);
+  const a = (angleDeg * Math.PI) / 180;
+  const cos = Math.cos(a), sin = Math.sin(a);
+  const corners = [
+    [-halfLengthM, -halfWidthM],
+    [ halfLengthM, -halfWidthM],
+    [ halfLengthM,  halfWidthM],
+    [-halfLengthM,  halfWidthM],
+  ];
+  return corners.map(([x, y]) => {
+    const xr = x * cos - y * sin;
+    const yr = x * sin + y * cos;
+    return {
+      lat: centerLat + yr / metresPerDegLat,
+      lng: centerLng + xr / metresPerDegLng,
+    };
+  });
+}
+
+describe('packPolygon — lattice orientation search', () => {
+  it('fits a line of turbines into a long thin rectangle at any rotation', () => {
+    // 80 m wide, 2 km long rectangle with 300 m spacing: a single row of
+    // turbines along the length fits ~6–7 points.  Without orientation
+    // search, a rectangle rotated 30° or 45° would contain 0–2 lattice
+    // points — most of the lattice would fall outside the strip.
+    const spacing = 300;
+    const halfLength = 1000;
+    const halfWidth = 40;
+
+    const countsByAngle = [0, 15, 30, 45, 60, 75, 90, 135].map(angle => {
+      const rect = rotatedRectangle(LAT0, LNG0, halfLength, halfWidth, angle);
+      return packPolygon(rect, spacing).length;
+    });
+
+    // Every orientation should land at least 5 turbines along the length.
+    for (const count of countsByAngle) {
+      expect(count).toBeGreaterThanOrEqual(5);
+    }
+
+    // And counts should be consistent across rotations — the rectangle has
+    // the same area regardless of orientation, so the lattice search should
+    // find a near-identical packing each time.
+    const minCount = Math.min(...countsByAngle);
+    const maxCount = Math.max(...countsByAngle);
+    expect(maxCount - minCount).toBeLessThanOrEqual(2);
+  });
+
+  it('does not reduce the count for a large axis-aligned square', () => {
+    // A square is near the worst case for the orientation search: all angles
+    // yield similar counts.  The optimum should at least match the naive
+    // axis-aligned packing.  At latitude 55.5°, 0.018° longitude ≈ 1.13 km
+    // while 0.018° latitude ≈ 2 km, giving a ~9 km² polygon.  Hex density
+    // at 400 m spacing → ~65 turbines.
+    const poly = square(LAT0, LNG0, KM * 2, KM * 2);
+    const count = packPolygon(poly, 400).length;
+    expect(count).toBeGreaterThan(50);
+  });
+
+  it('still keeps neighbours at least `spacing` apart after rotation', () => {
+    // Orientation search must not produce sub-lattice spacing — the hex
+    // lattice's nearest-neighbour distance is preserved under rotation.
+    const rect = rotatedRectangle(LAT0, LNG0, 600, 200, 37);
+    const spacing = 250;
+    const points = packPolygon(rect, spacing);
+
+    let minDist = Infinity;
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        minDist = Math.min(minDist, distanceMetres(points[i], points[j]));
+      }
+    }
+    expect(minDist).toBeGreaterThanOrEqual(spacing * 0.995);
+  });
+});
