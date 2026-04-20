@@ -121,14 +121,14 @@ test('09 persisted layout — survives reload', async ({ page }) => {
 });
 
 test('10 export layout — csv text field', async ({ page }) => {
+  const farm = new WindFarmPage(page);
   await page.getByRole('button', { name: 'Add turbine' }).click();
   for (const pos of [{ x: 120, y: 200 }, { x: 260, y: 200 }]) {
     await page.locator('.wind-map').click(pos);
     await expect(page.getByRole('button', { name: 'Deselect' })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Deselect' }).click();
-  await page.getByRole('button', { name: 'Export CSV' }).click();
-  await expect(page.getByRole('textbox', { name: 'Layout CSV export' })).toBeVisible();
+  await farm.openExport();
   await expect(page).toHaveScreenshot('10-export-layout.png', { maxDiffPixelRatio: 0.002 });
 });
 
@@ -304,6 +304,13 @@ test('21 pack area — turbines placed after Fill', async ({ page }) => {
   // After fill: fleet-defaults panel shows the turbine count.
   await expect(page.getByText(/\d+ turbines?$/)).toBeVisible();
   await expect(page).toHaveScreenshot('21-pack-filled.png', { maxDiffPixelRatio: 0.002 });
+});
+
+test('22 mobile overflow menu — Export and Import revealed', async ({ page }) => {
+  await page.getByRole('button', { name: 'More actions' }).click();
+  await expect(page.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Import CSV' })).toBeVisible();
+  await expect(page).toHaveScreenshot('22-overflow-menu.png', { maxDiffPixelRatio: 0.002 });
 });
 
 // ── Desktop layout (1280 × 800, no touch) ────────────────────────────────────

@@ -95,6 +95,13 @@ export function createWindFarm({ storage, rawStorage } = {}) {
     userEvent.click(screen.getByTestId('map-surface'));
   }
 
+  // On mobile the Export/Import buttons live behind a "⋯" overflow menu.
+  // Desktop renders them inline, so this is a no-op there.
+  function openOverflowMenuIfNeeded() {
+    const trigger = screen.queryByRole('button', { name: /more actions/i });
+    if (trigger) userEvent.click(trigger);
+  }
+
   return {
     /** Enter add-turbine mode (if not already in it), then tap the map to place a turbine. */
     addTurbine(location) {
@@ -298,12 +305,24 @@ export function createWindFarm({ storage, rawStorage } = {}) {
 
     /** Build a CSV export for the current layout. */
     exportLayoutCsv() {
+      openOverflowMenuIfNeeded();
       userEvent.click(screen.getByRole('button', { name: /export csv/i }));
     },
 
     /** Click the Import CSV button in the header to open the import modal. */
     openImportModal() {
+      openOverflowMenuIfNeeded();
       userEvent.click(screen.getByRole('button', { name: /^import csv$/i }));
+    },
+
+    /** Open the mobile header's overflow ("⋯") menu. */
+    openOverflowMenu() {
+      userEvent.click(screen.getByRole('button', { name: /more actions/i }));
+    },
+
+    /** Whether the mobile overflow ("⋯") trigger is rendered. */
+    hasOverflowMenuTrigger() {
+      return screen.queryByRole('button', { name: /more actions/i }) !== null;
     },
 
     /** Paste CSV text into the import textarea. */

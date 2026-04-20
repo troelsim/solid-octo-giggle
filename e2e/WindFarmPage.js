@@ -83,8 +83,20 @@ class WindFarmPage {
     await expect(this.page.getByText(/clear all \d+ turbines\?/i)).toBeVisible();
   }
 
+  /**
+   * Open the mobile header's overflow ("⋯") menu if present.
+   * On desktop the trigger isn't rendered and this is a no-op.
+   */
+  async openOverflowMenuIfPresent() {
+    const trigger = this.page.getByRole('button', { name: 'More actions' });
+    if (await trigger.isVisible().catch(() => false)) {
+      await trigger.click();
+    }
+  }
+
   /** Click Export CSV to open the export panel. */
   async openExport() {
+    await this.openOverflowMenuIfPresent();
     await this.page.getByRole('button', { name: 'Export CSV' }).click();
     await expect(this.page.getByRole('textbox', { name: 'Layout CSV export' })).toBeVisible();
   }
@@ -95,6 +107,7 @@ class WindFarmPage {
    * @param {string} csv
    */
   async importAndConfirm(csv) {
+    await this.openOverflowMenuIfPresent();
     await this.page.getByRole('button', { name: 'Import CSV' }).click();
     await this.page.getByRole('textbox', { name: 'CSV to import' }).fill(csv);
     await this.page.getByRole('button', { name: 'Import layout' }).click();

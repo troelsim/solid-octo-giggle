@@ -10,6 +10,7 @@ import FleetDefaultsPanel from './components/FleetDefaultsPanel';
 import SpacingRingButton from './components/SpacingRingButton';
 import ExportModal from './components/ExportModal';
 import ImportModal from './components/ImportModal';
+import OverflowMenu from './components/OverflowMenu';
 import { packPolygon } from './domain/packing';
 import './App.css';
 
@@ -172,23 +173,33 @@ export default function App() {
           PadSketch
         </div>
         <div className="header-right">
-          <button
-            className="btn-text btn-export"
-            onClick={openExport}
-            disabled={turbines.length === 0}
-            aria-label="Export CSV"
-            title={turbines.length === 0 ? 'Add turbines to export CSV' : 'Export layout as CSV'}
-          >
-            Export
-          </button>
-          <button
-            className="btn-text btn-import"
-            onClick={openImport}
-            aria-label="Import CSV"
-            title="Import layout from CSV"
-          >
-            Import
-          </button>
+          {isDesktop ? (
+            <>
+              <button
+                className="btn-text btn-export"
+                onClick={openExport}
+                disabled={turbines.length === 0}
+                aria-label="Export CSV"
+                title={turbines.length === 0 ? 'Add turbines to export CSV' : 'Export layout as CSV'}
+              >
+                Export
+              </button>
+              <button
+                className="btn-text btn-import"
+                onClick={openImport}
+                aria-label="Import CSV"
+                title="Import layout from CSV"
+              >
+                Import
+              </button>
+            </>
+          ) : (
+            <OverflowMenu
+              onOpenExport={openExport}
+              onOpenImport={openImport}
+              exportDisabled={turbines.length === 0}
+            />
+          )}
           <SpacingRingButton
             showSpacingRing={showSpacingRing}
             spacingRingDiameters={spacingRingDiameters}
@@ -245,7 +256,7 @@ export default function App() {
           ) : (
             <button
               className="btn-text btn-cancel"
-              onClick={() => { setMode('view'); setPolygonDraft([]); }}
+              onClick={cancelPackArea}
             >
               Cancel
             </button>
