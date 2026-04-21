@@ -14,6 +14,7 @@
   padding: 18px var(--space-6);
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 50%, var(--color-accent-amber) 100%);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #fff;
   font-size: var(--text-md);
   box-shadow: var(--shadow-primary);
