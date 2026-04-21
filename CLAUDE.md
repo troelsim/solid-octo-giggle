@@ -106,6 +106,27 @@ See `TEST_IMPROVEMENT_PLAN.md` for the roadmap to improve this layer further
 npm test -- --watchAll=false
 ```
 
+## CSS class taxonomy
+
+Every CSS declaration in this codebase fits into one of five layers: tokens,
+shape classes, skin classes, component classes, or state modifiers. Shape
+classes own geometry, skin classes own colour, and they compose in JSX — never
+inherit.
+
+The full contract lives in `src/styles/CLASS_TAXONOMY.md`. Read it before
+adding a new button, a new modifier, or any class that sets both size and
+colour in the same rule. Three rules that matter most:
+
+1. No raw colour literals (hex, rgba) outside `tokens.css`.
+2. No `!important` — if you need it, the shape/skin split is being violated.
+3. Modifiers (`--on`, `--danger`, `--active`) attach to skin classes, not
+   shape classes.
+
+Legacy classes like `btn-add`, `btn-sm`, and `btn-popover-confirm` predate
+this taxonomy and bundle shape with skin. They are deprecated: any PR that
+touches one of their call sites must migrate that call site to the shape+skin
+pattern.
+
 ## Use libraries for solved problems
 
 Before implementing UI behaviour from scratch, check whether a library already
@@ -127,5 +148,6 @@ viewport edge (e.g. a trigger in the bottom panel opening downward off-screen).
 - `src/App.js` — all state, all UI except the map
 - `src/WindMap.js` — Leaflet map (mocked in unit tests)
 - `src/styles/tokens.css` — every colour, spacing, and typography value; no hardcoded values elsewhere
+- `src/styles/CLASS_TAXONOMY.md` — the shape / skin / component contract for CSS classes
 - `src/__tests__/features/` — feature-level tests using the Application Driver pattern
 - `e2e/screenshots.spec.js` — Playwright screenshot scenarios
