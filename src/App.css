@@ -19,6 +19,7 @@
   justify-content: space-between;
   height: 52px;
   padding: 0 var(--space-4);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(17, 20, 16, 0.96);
   border-bottom: 1px solid var(--color-surface-border);
   flex-shrink: 0;
@@ -46,6 +47,7 @@
   right: 0;
   z-index: 10;
   background: var(--color-primary);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #fff;
   text-align: center;
   padding: var(--space-2) var(--space-4);
@@ -86,7 +88,9 @@
   z-index: 800;
   padding: 5px 10px;
   border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(255,255,255,0.25);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(17, 20, 16, 0.82);
   color: var(--color-text);
   font-size: var(--text-xs);
@@ -100,6 +104,7 @@
 }
 
 .layer-btn:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(30, 125, 90, 0.5);
 }
 
@@ -109,6 +114,7 @@
   z-index: 10;
   flex-shrink: 0;
   padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(17, 20, 16, 0.96);
   border-top: 1px solid var(--color-surface-border);
 }
@@ -156,6 +162,7 @@
 .panel-title-input:focus {
   outline: none;
   border-color: var(--color-primary-light);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(0, 0, 0, 0.2);
 }
 
@@ -164,12 +171,15 @@
 }
 
 .badge {
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   font-size: 10px;
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-accent-amber);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(224, 144, 32, 0.15);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(224, 144, 32, 0.3);
   padding: 1px 6px;
   border-radius: var(--radius-sm);
@@ -203,16 +213,21 @@
 }
 
 .btn-sm:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.1);
 }
 
 .btn-sm-danger {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: rgba(200, 49, 42, 0.35);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(200, 49, 42, 0.1);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #f87171;
 }
 
 .btn-sm-danger:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(200, 49, 42, 0.2);
 }
 
@@ -227,6 +242,7 @@
   width: 100%;
   min-height: 180px;
   resize: none;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(0,0,0,0.35);
   border: 1px solid var(--color-surface-border);
   border-radius: var(--radius-sm);
@@ -249,6 +265,7 @@
   touch-action: manipulation;
   text-decoration: underline;
   text-underline-offset: 2px;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   text-decoration-color: rgba(42, 170, 120, 0.4);
 }
 
@@ -258,10 +275,12 @@
 
 .btn-text-action--danger {
   color: var(--color-accent-red);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   text-decoration-color: rgba(200, 49, 42, 0.4);
 }
 
 .btn-text-action--danger:active {
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #e04040;
 }
 
@@ -279,6 +298,7 @@
 
 .spec-label {
   display: block;
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   font-size: 10px;
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -296,6 +316,7 @@
 .spec-input {
   flex: 1;
   min-width: 0;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(0,0,0,0.35);
   border: 1px solid var(--color-surface-border);
   border-radius: var(--radius-sm);
@@ -348,7 +369,9 @@
   height: 36px;
   border-radius: 50%;
   background: var(--color-primary);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #fff;
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   font-size: 22px;
   font-weight: 300;
   line-height: 1;
@@ -365,12 +388,16 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(255,255,255,0.25) !important;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.08);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: rgba(242, 237, 230, 0.75);
 }
 
 .btn-pack:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.15);
 }
 
@@ -390,8 +417,11 @@
 .btn-banner {
   padding: 4px 14px;
   border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(255,255,255,0.45);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.15);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #fff;
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
@@ -407,17 +437,22 @@
 }
 
 .btn-banner:not(:disabled):active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.28);
 }
 
 .btn-banner-fill {
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: #fff;
   color: var(--color-primary);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: #fff;
 }
 
 .btn-banner-fill:disabled {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.3);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: rgba(255,255,255,0.75);
 }
 
@@ -425,18 +460,24 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(255,255,255,0.25) !important;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.08);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: rgba(242, 237, 230, 0.75);
 }
 
 .btn-ring-toggle--on {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(30, 125, 90, 0.2);
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: rgba(42, 170, 120, 0.5) !important;
   color: var(--color-primary-light);
 }
 
 .btn-ring-toggle:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.1);
 }
 
@@ -453,18 +494,24 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(255,255,255,0.25) !important;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.08);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: rgba(242, 237, 230, 0.75);
 }
 
 .btn-settings--on {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(30, 125, 90, 0.2);
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: rgba(42, 170, 120, 0.5) !important;
   color: var(--color-primary-light);
 }
 
 .btn-settings:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.1);
 }
 
@@ -477,17 +524,23 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(255,255,255,0.25) !important;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.08);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: rgba(242, 237, 230, 0.75);
 }
 
 .btn-overflow--on {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.18);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #fff;
 }
 
 .btn-overflow:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.15);
 }
 
@@ -516,6 +569,7 @@
 
 .overflow-item:not(:disabled):active,
 .overflow-item:not(:disabled):hover {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(0, 0, 0, 0.06);
 }
 
@@ -539,10 +593,12 @@
 .popover {
   z-index: 200;
   min-width: 180px;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(17, 20, 16, 0.97);
   border: 1px solid var(--color-surface-border);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4) var(--space-4);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -550,6 +606,7 @@
 
 .popover-title {
   margin: 0 0 var(--space-3);
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   font-size: 10px;
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -566,6 +623,7 @@
 
 .popover-input {
   width: 64px;
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--color-surface-border);
   border-radius: var(--radius-sm);
@@ -600,7 +658,9 @@
   width: 100%;
   padding: 7px var(--space-3);
   border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid rgba(42, 170, 120, 0.4);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(30, 125, 90, 0.18);
   color: var(--color-primary-light);
   font-size: var(--text-sm);
@@ -613,18 +673,25 @@
 }
 
 .btn-popover-confirm:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(30, 125, 90, 0.32);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: rgba(42, 170, 120, 0.7);
 }
 
 .btn-popover-confirm--danger {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: rgba(200, 49, 42, 0.4);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(200, 49, 42, 0.12);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #e57070;
 }
 
 .btn-popover-confirm--danger:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(200, 49, 42, 0.24);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: rgba(200, 49, 42, 0.7);
 }
 
@@ -633,12 +700,15 @@
   height: 28px;
   border-radius: 50%;
   background: var(--color-surface);
+  /* stylelint-disable-next-line declaration-no-important -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid var(--color-surface-border) !important;
   color: var(--color-muted);
+  /* stylelint-disable-next-line declaration-property-unit-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   font-size: 18px;
 }
 
 .btn-close:active {
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(255,255,255,0.1);
 }
 
@@ -654,6 +724,7 @@
 .btn-cancel {
   padding: 6px 12px;
   border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line declaration-no-important -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid var(--color-surface-border) !important;
   color: var(--color-muted);
   font-size: var(--text-sm);
@@ -667,6 +738,7 @@
 .btn-export {
   padding: 6px 10px;
   border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line declaration-no-important -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid var(--color-surface-border) !important;
   color: var(--color-muted);
   font-size: var(--text-sm);
@@ -685,6 +757,7 @@
 .btn-import {
   padding: 6px 10px;
   border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line declaration-no-important -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border: 1px solid var(--color-surface-border) !important;
   color: var(--color-muted);
   font-size: var(--text-sm);
@@ -698,6 +771,7 @@
 .import-error {
   margin: 0 0 var(--space-2);
   font-size: var(--text-xs);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: #f87171;
 }
 
@@ -713,16 +787,19 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(2px);
 }
 
 .modal-card {
   width: min(100%, 560px);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(17, 20, 16, 0.98);
   border: 1px solid var(--color-surface-border);
   border-radius: var(--radius-md);
   padding: var(--space-3);
+  /* stylelint-disable-next-line function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
 }
 
@@ -733,26 +810,35 @@
 /* ── Leaflet overrides ── */
 .leaflet-container {
   font-family: var(--font-sans);
+  /* stylelint-disable-next-line color-no-hex -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: #1a1f1a;
 }
 
 .leaflet-control-zoom a {
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(17, 20, 16, 0.82) !important;
+  /* stylelint-disable-next-line declaration-no-important -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: var(--color-text) !important;
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   border-color: rgba(255,255,255,0.2) !important;
   backdrop-filter: blur(4px);
 }
 
 .leaflet-control-zoom a:hover {
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(30, 125, 90, 0.5) !important;
 }
 
 .leaflet-control-attribution {
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   background: rgba(17, 20, 16, 0.7) !important;
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: rgba(242, 237, 230, 0.5) !important;
+  /* stylelint-disable-next-line declaration-no-important, declaration-property-unit-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   font-size: 9px !important;
 }
 
 .leaflet-control-attribution a {
+  /* stylelint-disable-next-line declaration-no-important, function-disallowed-list -- step-2 baseline: legacy pre-taxonomy declaration; migrate in step 3 (CLASS_TAXONOMY.md) */
   color: rgba(242, 237, 230, 0.6) !important;
 }

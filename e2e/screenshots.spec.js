@@ -313,6 +313,29 @@ test('22 mobile overflow menu — Export and Import revealed', async ({ page }) 
   await expect(page).toHaveScreenshot('22-overflow-menu.png', { maxDiffPixelRatio: 0.002 });
 });
 
+// Spacing-ring skins — regression net for the step-3 migration of
+// .btn-ring-toggle (shape + skin) and its --on modifier. The ring is on by
+// default, so .btn-ring-toggle--on is already captured in every baseline
+// screenshot — these scenarios cover the off skin and the popover, which
+// exercises the non-danger .btn-popover-confirm (different colour family from
+// the --danger variant in 07/08/13).
+test('23 spacing ring — off skin after toggling ring off', async ({ page }) => {
+  // First click hides the ring; the button reverts to the default (off) skin.
+  await page.getByRole('button', { name: 'Toggle spacing ring' }).click();
+  await expect(page.getByRole('button', { name: 'Toggle spacing ring' }))
+    .toHaveAttribute('title', /show spacing ring/i);
+  await expect(page).toHaveScreenshot('23-ring-off.png', { maxDiffPixelRatio: 0.002 });
+});
+
+test('24 spacing ring — popover open with non-danger confirm', async ({ page }) => {
+  // Two clicks: first hides the ring, second opens the configure popover.
+  await page.getByRole('button', { name: 'Toggle spacing ring' }).click();
+  await page.getByRole('button', { name: 'Toggle spacing ring' }).click();
+  await expect(page.getByRole('spinbutton', { name: 'Number of rotor diameters' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Show ring' })).toBeVisible();
+  await expect(page).toHaveScreenshot('24-ring-popover.png', { maxDiffPixelRatio: 0.002 });
+});
+
 // ── Desktop layout (1280 × 800, no touch) ────────────────────────────────────
 
 test.describe('desktop layout', () => {
