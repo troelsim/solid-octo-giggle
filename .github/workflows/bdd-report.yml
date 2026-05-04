@@ -1,0 +1,67 @@
+name: BDD report
+
+# Builds the Cucumber + Allure suite and publishes the static HTML report to
+# GitHub Pages so the latest run is viewable from any browser (incl. phone).
+#
+# Setup needed once on the repository:
+#   Settings → Pages → Build and deployment → Source: GitHub Actions
+#
+# After the first successful run the report lives at
+#   https://<owner>.github.io/<repo>/
+on:
+  push:
+    branches:
+      - main
+      - claude/bdd-gherkin-allure-example-sjS22
+  workflow_dispatch:
+
+# A single concurrent deploy; in-flight runs for the same ref are cancelled
+# so the published page always reflects the most recent push.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run BDD suite
+        # Continue even if a scenario fails — we still want the report to be
+        # published so failures are visible on the phone.
+        continue-on-error: true
+        run: npm run bdd
+
+      - name: Generate Allure HTML
+        run: npm run bdd:report:generate
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
