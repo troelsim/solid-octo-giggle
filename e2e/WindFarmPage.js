@@ -1,9 +1,9 @@
 // @ts-check
 // e2e Page Object — the "how" lives here so scenarios only express "what".
 //
-// Mirrors the Application Driver pattern used in unit tests
-// (src/test-support/WindFarmDriver.js) but targets the live Playwright page
-// rather than JSDOM + RTL.
+// Mirrors the Application Driver pattern used by the Cucumber acceptance
+// suite (src/test-support/WindFarmDriver.js) but targets the live
+// Playwright page rather than JSDOM + RTL.
 //
 // Usage:
 //   const farm = new WindFarmPage(page);

@@ -5,16 +5,22 @@
 // business-level intents ("add a turbine", "set hub height to 140") into
 // the RTL calls that make those things happen.
 //
-// Tests never touch `screen` or `userEvent` directly; if the DOM structure
-// changes, only this file needs updating.
+// Used by the Cucumber acceptance suite under features/ — step definitions
+// delegate every UI action to a driver method, so steps never touch
+// `screen` or `userEvent` directly. If the DOM structure changes, only
+// this file needs updating.
 //
-// Usage:
-//   const farm = createWindFarm();
-//   farm.addTurbine();
-//   expect(farm.turbineCount()).toBe(1);
+// Usage from a step definition:
+//   this.farm = createWindFarm();
+//   this.farm.addTurbine();
+//   expect(this.farm.turbineCount()).toBe(1);
 //
-// Note: call jest.mock('../../WindMap') in each test file before importing
-// this driver so that Leaflet is replaced by the testable stub.
+// The Leaflet-based `src/WindMap.js` is replaced with a testable stub at
+// require-time:
+//   - In Cucumber, `features/support/00-bootstrap.cjs` aliases the import
+//     to `src/__mocks__/WindMap.js` so the driver always sees the stub.
+//   - In Jest (the App smoke test), the test file calls
+//     `jest.mock('./WindMap')` before importing the driver.
 
 import { render, screen, within, fireEvent, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -361,6 +367,99 @@ export function createWindFarm({ storage, rawStorage } = {}) {
     /** True when the WindMap has spacing ring rendering enabled. */
     isSpacingRingEnabled() {
       return screen.getByTestId('wind-map').dataset.showSpacingRing === 'true';
+    },
+
+    /** True when the header "Clear layout" button is rendered. */
+    hasClearLayoutButton() {
+      return !!screen.queryByRole('button', { name: /clear layout/i });
+    },
+
+    /** Visible title of the clear-layout confirmation popover, or null. */
+    clearPopoverTitle() {
+      const el = screen.queryByText(/clear all \d+ turbines\?/i);
+      return el ? el.textContent : null;
+    },
+
+    /** True when the fleet-settings gear button is rendered (desktop only). */
+    hasFleetSettingsGear() {
+      return !!screen.queryByRole('button', { name: /fleet settings/i });
+    },
+
+    /** True when the "Fleet defaults" heading is in the DOM. */
+    isFleetDefaultsHeadingVisible() {
+      return !!screen.queryByText('Fleet defaults');
+    },
+
+    /** True when a spec field label is currently visible. */
+    hasSpecLabel(label) {
+      return !!screen.queryByText(label);
+    },
+
+    /** True when the "Apply to all turbines" button is rendered. */
+    hasApplyToAllButton() {
+      return !!screen.queryByRole('button', { name: /apply to all turbines/i });
+    },
+
+    /** True when the turbine editor's Move button is rendered. */
+    hasMoveButton() {
+      return !!screen.queryByRole('button', { name: /^move$/i });
+    },
+
+    /** True when the turbine editor's Delete button is rendered. */
+    hasDeleteButton() {
+      return !!screen.queryByRole('button', { name: /^delete$/i });
+    },
+
+    /** True when the turbine name input is rendered (i.e. turbine editor is open). */
+    hasTurbineNameInput() {
+      return !!screen.queryByRole('textbox', { name: /turbine name/i });
+    },
+
+    /** True when the mobile bottom panel is rendered. */
+    hasBottomPanel() {
+      return !!document.querySelector('.bottom-panel');
+    },
+
+    /** True when the "outline an area" draw banner is visible. */
+    isDrawBannerVisible() {
+      return !!screen.queryByText(/outline an area/i);
+    },
+
+    /** True when the "drag or tap to move" banner is visible. */
+    isMoveBannerVisible() {
+      return !!screen.queryByText(/drag or tap to move/i);
+    },
+
+    /** True when the header Export CSV button is rendered. */
+    hasExportButton() {
+      return !!screen.queryByRole('button', { name: /export csv/i });
+    },
+
+    /** True when the Export CSV button is enabled. */
+    isExportButtonEnabled() {
+      const btn = screen.queryByRole('button', { name: /export csv/i });
+      return !!btn && !btn.disabled;
+    },
+
+    /** True when the header Import CSV button is rendered. */
+    hasImportButton() {
+      return !!screen.queryByRole('button', { name: /^import csv$/i });
+    },
+
+    /** Current value of the turbine-name input on the selected turbine. */
+    turbineNameInputValue() {
+      return screen.getByRole('textbox', { name: /turbine name/i }).value;
+    },
+
+    /** Placeholder of the turbine-name input on the selected turbine. */
+    turbineNameInputPlaceholder() {
+      return screen.getByRole('textbox', { name: /turbine name/i }).placeholder;
+    },
+
+    /** Aria-label of the n-th turbine marker (1-based). */
+    turbineMarkerLabel(n) {
+      const markers = screen.queryAllByTestId('turbine-marker');
+      return markers[n - 1]?.getAttribute('aria-label') ?? null;
     },
 
     /** The rotor-diameter multiplier currently passed to the WindMap. */

@@ -16,9 +16,13 @@ The current test strategy has three layers:
 
 | Layer | Tool | What it catches |
 |---|---|---|
-| Unit / feature tests | JSDOM + RTL, 13 files | Business logic, state transitions |
+| Acceptance suite | Cucumber + JSDOM + RTL via the Application Driver, `features/*.feature` | Business logic, state transitions, end-to-end behaviour at the JSDOM level |
 | Screenshot e2e suite | Playwright, `e2e/screenshots.spec.js` | Visual states, interaction flows |
 | Browser MCP (dev-time) | `mcp__playwright__*`, ad-hoc | Layout bugs, off-screen elements |
+
+A small Jest unit suite under `src/__tests__/` covers pure utilities (CSV
+parsing/building, polygon packing) and an App smoke test. It does not
+exercise the driver — anything that drives the UI lives in Cucumber.
 
 The layers are correct in direction but have gaps that compound as the app grows:
 

@@ -12,7 +12,6 @@ on:
   push:
     branches:
       - main
-      - claude/bdd-gherkin-allure-example-sjS22
   workflow_dispatch:
 
 # A single concurrent deploy; in-flight runs for the same ref are cancelled

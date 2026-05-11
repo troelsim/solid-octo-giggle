@@ -40,18 +40,18 @@ _Date: 2026-04-09_
 - **Completed (fleet defaults panel):** `src/components/FleetDefaultsPanel.js` now owns the fleet spec editor markup (Hub height/Rotor dia./Power spec fields, "Apply to all turbines" button, Clear-layout confirmation popover) and is rendered from both the desktop settings popover and the mobile bottom panel.
   - The component owns its own `clearWrapRef` and `showClearPopover` state, removing a subtle bug where both layout paths shared the same ref — if the viewport was resized while the clear popover was open, the popover would reanchor to a stale or missing element.
   - `App.js` no longer needs `showClearPopover`, `clearWrapRef`, or the `setShowClearPopover(false)` call in `clearLayout`; the SpecField import was also removed as it is now only used inside the dedicated component.
-- Both components are covered by existing feature tests (`clear-layout`, `fleet-defaults`, `turbine-specs`, `delete-turbine`, `turbine-management`, `desktop-layout`) which continue to pass unchanged.
+- Both components are covered by the Cucumber acceptance suite (`features/clear-layout.feature`, `features/fleet-defaults.feature`, `features/turbine-specs.feature`, `features/delete-turbine.feature`, `features/turbine-management.feature`, `features/desktop-layout.feature`) which continues to pass unchanged.
 
 ### 3) ~~Introduce schema validation for persisted/imported layout data~~ ✅ Done
 - **Completed:** `src/domain/schemas.js` added with Zod schemas for `TurbineSchema`, `FleetSpecSchema`, `MapViewSchema`, and `StoredLayoutSchema`.
 - `useLayoutStorage.loadSaved()` now runs `StoredLayoutSchema.safeParse()` after `JSON.parse`; any failure (corrupt JSON, wrong types, missing/negative fields) returns `null` so callers fall back to empty defaults cleanly.
 - `createWindFarm()` in the test driver gained a `rawStorage` option for seeding arbitrary raw strings in tests.
-- 14 feature tests added in `src/__tests__/features/schema-validation.test.js` covering unparseable JSON, wrong field types, missing/negative spec values, invalid mapView shape, and valid round-trip loading.
+- Schema-validation behaviour is now covered by `features/schema-validation.feature` (under "Unparseable JSON falls back to empty defaults", "Schema-invalid data is rejected", and "Valid data still loads correctly" rules) — covering unparseable JSON, wrong field types, missing/negative spec values, invalid mapView shape, and valid round-trip loading.
 
 ### 4) ~~Move CSV parsing/serialization into dedicated, tested utilities~~ ✅ Done
 - **Completed:** `src/utils/layoutCsv.js` extracted with `buildLayoutCsv`, `parseCsvRecords`, and `parseLayoutCsv`.
 - Unit tests in `src/__tests__/features/layout-csv-utils.test.js` cover quoting, newline, CRLF, and unterminated-field edge cases.
-- Integration tests in `src/__tests__/features/import-layout.test.js` and `export-layout.test.js` cover the full round-trip.
+- Acceptance scenarios in `features/import-layout.feature` and `features/export-layout.feature` cover the full round-trip.
 - A library replacement (PapaParse) was evaluated and ruled out: the format is self-generated, the parser is already RFC 4180-compliant, and adding a library would increase bundle size without benefit for this constrained use case.
 
 ### ~~5) Add baseline engineering guardrails (lint/format/typecheck)~~ ✅ Done

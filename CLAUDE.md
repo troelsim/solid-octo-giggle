@@ -2,37 +2,43 @@
 
 ## Testing — highest design objective
 
-Every user-facing behaviour must be covered by a feature-level test before the
-task is considered done. This is the single most important quality rule in this
-codebase.
+Every user-facing behaviour must be covered by a Cucumber scenario before the
+task is considered done. This is the single most important quality rule in
+this codebase.
 
 **Checklist for any change that touches `src/App.js` or `src/WindMap.js`:**
 
-1. Does the new behaviour have a scenario in `src/__tests__/features/`?
+1. Does the new behaviour have a scenario in `features/*.feature`, grouped
+   under a meaningful `Rule:`?
 2. If the change adds a new prop to `WindMap`, is it exposed as a `data-*`
-   attribute in `src/__mocks__/WindMap.js` so tests can assert on it?
+   attribute in `src/__mocks__/WindMap.js` so scenarios can assert on it?
 3. If the change adds a new UI interaction, is there a driver method in
    `src/test-support/WindFarmDriver.js` for it?
+4. If the Gherkin vocabulary is new, is there a step in
+   `features/step_definitions/` that delegates to the driver?
 
-Run the suite before finishing:
+Run the suites before finishing:
 
 ```bash
-npm test -- --watchAll=false
+npm run bdd                          # Cucumber acceptance suite
+npm test -- --watchAll=false         # Jest unit tests (utilities, smoke)
 ```
 
-All tests must pass. A Stop hook will remind you if source files were modified
-without a corresponding test file being added or changed.
+All tests must pass.
 
 ### Test architecture
 
 | Layer | File | Role |
 |---|---|---|
-| Tests | `src/__tests__/features/*.test.js` | What — business-language assertions |
-| Driver | `src/test-support/WindFarmDriver.js` | How — RTL facade; only file tests touch |
+| Features | `features/*.feature` | What — business-language scenarios, organised into `Rule:` blocks |
+| Steps | `features/step_definitions/*.js` | Glue — translate Gherkin sentences into driver calls |
+| World | `features/support/world.js` | Per-scenario App + driver lifecycle, viewport, geolocation |
+| Driver | `src/test-support/WindFarmDriver.js` | How — RTL facade; the only layer that touches `screen`/`userEvent` |
 | Mock | `src/__mocks__/WindMap.js` | Leaflet stand-in; exposes map state via `data-*` |
 
-When adding a new feature, extend all three layers: a new test file (or section),
-new driver methods, and any new `data-*` attributes on the mock.
+Unit tests under `src/__tests__/` cover pure utilities (CSV, packing) and a
+smoke test in `src/App.test.js`. They do not exercise the driver — anything
+that drives the UI lives in Cucumber.
 
 ## After making any UI change
 
@@ -149,5 +155,7 @@ viewport edge (e.g. a trigger in the bottom panel opening downward off-screen).
 - `src/WindMap.js` — Leaflet map (mocked in unit tests)
 - `src/styles/tokens.css` — every colour, spacing, and typography value; no hardcoded values elsewhere
 - `src/styles/CLASS_TAXONOMY.md` — the shape / skin / component contract for CSS classes
-- `src/__tests__/features/` — feature-level tests using the Application Driver pattern
+- `src/__tests__/` — Jest unit tests for pure utilities (CSV, packing) and an App smoke test
+- `features/` — Cucumber acceptance suite (the `Rule:`-organised feature files, step definitions, world)
+- `src/test-support/WindFarmDriver.js` — Application Driver shared by Cucumber steps
 - `e2e/screenshots.spec.js` — Playwright screenshot scenarios
