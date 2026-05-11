@@ -1,5 +1,5 @@
 // Smoke test — verifies the app mounts without crashing.
-// Detailed behaviour is covered in src/__tests__/features/.
+// Detailed behaviour is covered by the Cucumber suite in features/.
 
 jest.mock('./WindMap');
 

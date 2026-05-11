@@ -27,7 +27,10 @@ jobs:
       - name: Run CSS lint
         run: npm run lint:css
 
-      - name: Run tests
+      - name: Run unit tests
         run: npm test
         env:
           CI: true
+
+      - name: Run BDD acceptance suite
+        run: npm run bdd
