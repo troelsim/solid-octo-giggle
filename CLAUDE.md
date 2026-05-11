@@ -155,5 +155,7 @@ viewport edge (e.g. a trigger in the bottom panel opening downward off-screen).
 - `src/WindMap.js` — Leaflet map (mocked in unit tests)
 - `src/styles/tokens.css` — every colour, spacing, and typography value; no hardcoded values elsewhere
 - `src/styles/CLASS_TAXONOMY.md` — the shape / skin / component contract for CSS classes
-- `src/__tests__/features/` — feature-level tests using the Application Driver pattern
+- `src/__tests__/` — Jest unit tests for pure utilities (CSV, packing) and an App smoke test
+- `features/` — Cucumber acceptance suite (the `Rule:`-organised feature files, step definitions, world)
+- `src/test-support/WindFarmDriver.js` — Application Driver shared by Cucumber steps
 - `e2e/screenshots.spec.js` — Playwright screenshot scenarios

@@ -46,8 +46,9 @@ relevant backlog at the appropriate priority tier at the same time.
 `TEST_IMPROVEMENT_PLAN.md` specifically tracks the test infrastructure
 roadmap (flakiness, visual regression baselines, accessibility coverage, CI
 integration). Any PR that changes `e2e/screenshots.spec.js`,
-`playwright.config.js`, or the unit-test driver layer must check whether it
-closes or opens an item in that plan.
+`playwright.config.js`, the Cucumber suite under `features/`, or the
+Application Driver in `src/test-support/` must check whether it closes or
+opens an item in that plan.
 
 ## Button visibility on dark backgrounds
 

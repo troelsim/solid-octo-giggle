@@ -5,16 +5,22 @@
 // business-level intents ("add a turbine", "set hub height to 140") into
 // the RTL calls that make those things happen.
 //
-// Tests never touch `screen` or `userEvent` directly; if the DOM structure
-// changes, only this file needs updating.
+// Used by the Cucumber acceptance suite under features/ — step definitions
+// delegate every UI action to a driver method, so steps never touch
+// `screen` or `userEvent` directly. If the DOM structure changes, only
+// this file needs updating.
 //
-// Usage:
-//   const farm = createWindFarm();
-//   farm.addTurbine();
-//   expect(farm.turbineCount()).toBe(1);
+// Usage from a step definition:
+//   this.farm = createWindFarm();
+//   this.farm.addTurbine();
+//   expect(this.farm.turbineCount()).toBe(1);
 //
-// Note: call jest.mock('../../WindMap') in each test file before importing
-// this driver so that Leaflet is replaced by the testable stub.
+// The Leaflet-based `src/WindMap.js` is replaced with a testable stub at
+// require-time:
+//   - In Cucumber, `features/support/00-bootstrap.cjs` aliases the import
+//     to `src/__mocks__/WindMap.js` so the driver always sees the stub.
+//   - In Jest (the App smoke test), the test file calls
+//     `jest.mock('./WindMap')` before importing the driver.
 
 import { render, screen, within, fireEvent, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
